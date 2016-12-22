@@ -37,16 +37,16 @@ object DependencyUpdatesPlugin extends AutoPlugin {
             d.copy(name = name.getOrElse(d.name))
           }
           ModuleUpdatesService.resolve(_dependencies).sortBy(_.status).foreach {
-            case ModuleStatus(o, n, v, "success", _) ⇒
-              logger.success(s"$o:$n:$v is latest version")
-            case ModuleStatus(o, n, v, "expired", lv) ⇒
-              logger.warn(s"$o:$n:$v can upgrade to ${Red(lv)}")
-            case ModuleStatus(o, n, v, "not_found", _) ⇒
-              logger.error(s"$o:$n:$v ${LightGray("can not found")}")
-            case ModuleStatus(o, n, v, "unreleased", _) ⇒
-              logger.warn(s"$o:$n:$v is ${Yellow("unreleased")}")
-            case ModuleStatus(o, n, v, "error", _) ⇒
-              logger.error(s"$o:$n:$v updates error, please retry!")
+            case s @ ModuleStatus(_, _, _, "success", _) ⇒
+              logger.success(s"${s.id} is latest version")
+            case s @ ModuleStatus(_, _, _, "expired", lv) ⇒
+              logger.warn(s"${s.id} can upgrade to ${Red(lv)}")
+            case s @ ModuleStatus(_, _, _, "not_found", _) ⇒
+              logger.error(s"${s.id} ${LightGray("can not found")}")
+            case s @ ModuleStatus(_, _, _, "unreleased", _) ⇒
+              logger.warn(s"${s.id} is ${Yellow("unreleased")}")
+            case s @ ModuleStatus(_, _, _, "error", _) ⇒
+              logger.error(s"${s.id} updates error, please retry!")
             case _ ⇒
           }
         }
