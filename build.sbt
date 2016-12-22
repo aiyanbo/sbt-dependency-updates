@@ -8,7 +8,10 @@ version := "1.0.0-SNAPSHOT"
 
 sbtPlugin := true
 
-libraryDependencies += "org.asynchttpclient" % "async-http-client" % "2.0.24"
+libraryDependencies ++= Seq(
+  "com.lihaoyi" %% "fansi" % "0.2.3",
+  "org.asynchttpclient" % "async-http-client" % "2.0.24"
+)
 
 scalacOptions ++= Seq("-deprecation", "-unchecked")
 

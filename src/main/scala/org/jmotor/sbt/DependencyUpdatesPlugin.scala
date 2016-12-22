@@ -2,6 +2,8 @@ package org.jmotor.sbt
 
 import org.jmotor.sbt.service.ModuleUpdatesService
 import sbt.Keys._
+import fansi.Color._
+import org.jmotor.sbt.model.ModuleStatus
 import sbt.{AutoPlugin, Compile, Configuration, IntegrationTest, Optional, PluginTrigger, Provided, Runtime, TaskKey, Test, inConfig, taskKey}
 
 /**
@@ -34,13 +36,18 @@ object DependencyUpdatesPlugin extends AutoPlugin {
               (m.name == d.name || m.name == s"${d.name}_$binaryVersion")).map(_.name)
             d.copy(name = name.getOrElse(d.name))
           }
-          ModuleUpdatesService.resolve(_dependencies).sortBy(_.status).foreach { moduleStatus ⇒
-            moduleStatus.status match {
-              case "success"   ⇒ logger.success(s"${moduleStatus.org}:${moduleStatus.name}:${moduleStatus.version} is latest version")
-              case "expired"   ⇒ logger.warn(s"${moduleStatus.org}:${moduleStatus.name}:${moduleStatus.version} can upgrade to ${moduleStatus.lastVersion}")
-              case "not_found" ⇒ logger.error(s"${moduleStatus.org}:${moduleStatus.name}:${moduleStatus.version} can not found")
-              case _           ⇒
-            }
+          ModuleUpdatesService.resolve(_dependencies).sortBy(_.status).foreach {
+            case ModuleStatus(o, n, v, "success", _) ⇒
+              logger.success(s"$o:$n:$v is latest version")
+            case ModuleStatus(o, n, v, "expired", lv) ⇒
+              logger.warn(s"$o:$n:$v can upgrade to ${Red(lv)}")
+            case ModuleStatus(o, n, v, "not_found", _) ⇒
+              logger.error(s"$o:$n:$v ${LightGray("can not found")}")
+            case ModuleStatus(o, n, v, "unreleased", _) ⇒
+              logger.warn(s"$o:$n:$v is ${Yellow("unreleased")}")
+            case ModuleStatus(o, n, v, "error", _) ⇒
+              logger.error(s"$o:$n:$v updates error, please retry!")
+            case _ ⇒
           }
         }
       }
