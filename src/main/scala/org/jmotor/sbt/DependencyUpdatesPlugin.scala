@@ -43,8 +43,8 @@ object DependencyUpdatesPlugin extends AutoPlugin {
               logger.warn(s"${s.id} can upgrade to ${Red(lv)}")
             case s @ ModuleStatus(_, _, _, "not_found", _) ⇒
               logger.error(s"${s.id} ${LightGray("can not found")}")
-            case s @ ModuleStatus(_, _, _, "unreleased", _) ⇒
-              logger.warn(s"${s.id} is ${Yellow("unreleased")}")
+            case s @ ModuleStatus(_, _, _, "unreleased", lv) ⇒
+              logger.warn(s"${s.id} is ${Yellow("unreleased")}, the latest version is ${Red(lv)}")
             case s @ ModuleStatus(_, _, _, "error", _) ⇒
               logger.error(s"${s.id} updates error, please retry!")
             case _ ⇒
