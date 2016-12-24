@@ -1,13 +1,13 @@
 package org.jmotor.sbt.service
 
 import org.asynchttpclient.{AsyncCompletionHandler, DefaultAsyncHttpClient, Response}
-import org.jmotor.sbt.model.ModuleStatus
+import org.jmotor.sbt.model.{ModuleStatus, Status}
 import org.jmotor.sbt.util.ModuleStatusParser
 import sbt.ModuleID
 
-import scala.concurrent.{Await, Future, Promise}
-import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future, Promise}
 
 /**
  * Component:
@@ -34,9 +34,9 @@ object ModuleUpdatesService {
           val status = response.getStatusCode match {
             case s if s / 100 == 2 ⇒
               val (status, version) = ModuleStatusParser.parse(response.getResponseBody)
-              ModuleStatus(module.organization, module.name, module.revision, status, version)
-            case 404 ⇒ ModuleStatus(module.organization, module.name, module.revision, "not_found", "")
-            case _   ⇒ ModuleStatus(module.organization, module.name, module.revision, "error", "")
+              ModuleStatus(module.organization, module.name, module.revision, Status.withName(status), version)
+            case 404 ⇒ ModuleStatus(module.organization, module.name, module.revision, Status.NotFound, "")
+            case _   ⇒ ModuleStatus(module.organization, module.name, module.revision, Status.Error, "")
           }
           result.success(status)
           status

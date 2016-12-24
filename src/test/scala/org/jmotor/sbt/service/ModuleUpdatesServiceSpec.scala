@@ -1,5 +1,6 @@
 package org.jmotor.sbt.service
 
+import org.jmotor.sbt.model.Status
 import org.scalatest.FunSuite
 import sbt.ModuleID
 
@@ -16,7 +17,7 @@ class ModuleUpdatesServiceSpec extends FunSuite {
     val status = ModuleUpdatesService.resolve(Seq(
       ModuleID("com.typesafe", "config", "1.3.0")
     ))
-    assert(status.head.status == "expired")
+    assert(status.head.status == Status.Expired)
   }
 
 }

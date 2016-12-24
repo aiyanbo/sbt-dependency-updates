@@ -1,5 +1,7 @@
 package org.jmotor.sbt.model
 
+import org.jmotor.sbt.model.Status.Status
+
 /**
  * Component:
  * Description:
@@ -7,7 +9,7 @@ package org.jmotor.sbt.model
  *
  * @author AI
  */
-final case class ModuleStatus(org: String, name: String, version: String, status: String, lastVersion: String) {
+final case class ModuleStatus(org: String, name: String, version: String, status: Status, lastVersion: String) {
 
   lazy val id: String = s"$org:$name:$version"
 

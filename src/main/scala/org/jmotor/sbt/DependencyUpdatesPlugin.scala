@@ -1,9 +1,8 @@
 package org.jmotor.sbt
 
 import org.jmotor.sbt.service.ModuleUpdatesService
+import org.jmotor.sbt.util.ProgressBar
 import sbt.Keys._
-import fansi.Color._
-import org.jmotor.sbt.model.ModuleStatus
 import sbt.{AutoPlugin, Compile, Configuration, IntegrationTest, Optional, PluginTrigger, Provided, Runtime, TaskKey, Test, inConfig, taskKey}
 
 /**
@@ -26,7 +25,6 @@ object DependencyUpdatesPlugin extends AutoPlugin {
     Seq(
       dependencyUpdates := {
         scalaBinaryVersion.value
-        val logger = streams.value.log
         val dependencies = libraryDependencies.value
         val binaryVersion = scalaBinaryVersion.value
         update.value.configuration(config.name) foreach { report ⇒
@@ -36,19 +34,11 @@ object DependencyUpdatesPlugin extends AutoPlugin {
               (m.name == d.name || m.name == s"${d.name}_$binaryVersion")).map(_.name)
             d.copy(name = name.getOrElse(d.name))
           }
-          ModuleUpdatesService.resolve(_dependencies).sortBy(_.status).foreach {
-            case s @ ModuleStatus(_, _, _, "success", _) ⇒
-              logger.success(s"${s.id} is latest version")
-            case s @ ModuleStatus(_, _, _, "expired", lv) ⇒
-              logger.warn(s"${s.id} can upgrade to ${Red(lv)}")
-            case s @ ModuleStatus(_, _, _, "not_found", _) ⇒
-              logger.error(s"${s.id} ${LightGray("can not found")}")
-            case s @ ModuleStatus(_, _, _, "unreleased", lv) ⇒
-              logger.warn(s"${s.id} is ${Yellow("unreleased")}, the latest version is ${Red(lv)}")
-            case s @ ModuleStatus(_, _, _, "error", _) ⇒
-              logger.error(s"${s.id} updates error, please retry!")
-            case _ ⇒
-          }
+          val bar = new ProgressBar("[info] Checking", "[info] Done checking.")
+          bar.start()
+          val status = ModuleUpdatesService.resolve(_dependencies).sortBy(_.status.id)
+          bar.stop()
+          status.foreach(util.Logger.log)
         }
       }
     )
