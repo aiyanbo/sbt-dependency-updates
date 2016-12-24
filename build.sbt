@@ -12,7 +12,8 @@ sbtPlugin := true
 
 libraryDependencies ++= Seq(
   "com.lihaoyi" %% "fansi" % "0.2.3",
-  "org.asynchttpclient" % "async-http-client" % "2.0.24"
+  "org.asynchttpclient" % "async-http-client" % "2.0.24",
+  "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 )
 
 publishMavenStyle := true
@@ -25,10 +26,12 @@ credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
 
 publishTo := {
   val nexus = "https://oss.sonatype.org/"
-  if (isSnapshot.value)
+  if (isSnapshot.value) {
     Some("snapshots" at nexus + "content/repositories/snapshots")
-  else
+  }
+  else {
     Some("releases" at nexus + "service/local/staging/deploy/maven2")
+  }
 }
 
 pomExtra :=
