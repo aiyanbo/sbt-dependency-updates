@@ -44,7 +44,10 @@ object DependencyUpdatesPlugin extends AutoPlugin {
           sbt.IO.readLines(new File(thisProject.value.base.getAbsoluteFile + "/project/plugins.sbt"))
         ) match {
             case Success(lines) ⇒
-              lines.filterNot(_.trim.isEmpty).map {
+              lines.filter { line ⇒
+                val trimLine = line.trim
+                trimLine.nonEmpty && trimLine.startsWith("addSbtPlugin")
+              } map {
                 case addSbtPluginRegex(org, n, v) ⇒ ModuleID(org, n, v)
               }
             case Failure(_) ⇒ Seq.empty[ModuleID]
