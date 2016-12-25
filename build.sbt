@@ -6,7 +6,7 @@ organization := "org.jmotor.sbt"
 
 name := "sbt-dependency-updates"
 
-version := "1.0.1"
+version := "1.0.3-SNAPSHOT"
 
 sbtPlugin := true
 
