@@ -18,7 +18,7 @@ import scala.util.{Failure, Success, Try}
  */
 object DependencyUpdatesPlugin extends AutoPlugin {
 
-  private[this] val addSbtPluginRegex = """addSbtPlugin\("([\w\.-]+)" ?%{1,2} ?"([\w\.-]+)"\ ?% ?"([\w\.-]+)"\)""".r
+  private[this] val addSbtPluginRegex = """addSbtPlugin\("([\w\.-]+)" *%{1,2} *"([\w\.-]+)"\ *% *"([\w\.-]+)"\)""".r
 
   override def trigger: PluginTrigger = allRequirements
 
