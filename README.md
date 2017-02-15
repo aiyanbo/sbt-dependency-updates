@@ -18,7 +18,7 @@ sbt-dependency-updates 可以帮助 SBT 构建的工程检查所有依赖是否�
 
 ```scala
 
-addSbtPlugin("org.jmotor.sbt" % "sbt-dependency-updates" % "1.0.4")
+addSbtPlugin("org.jmotor.sbt" % "sbt-dependency-updates" % "1.0.6")
 
 ```
 
