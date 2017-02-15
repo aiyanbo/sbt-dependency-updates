@@ -6,14 +6,14 @@ organization := "org.jmotor.sbt"
 
 name := "sbt-dependency-updates"
 
-version := "1.0.5"
+version := "1.0.6"
 
 sbtPlugin := true
 
 libraryDependencies ++= Seq(
   "com.lihaoyi" %% "fansi" % "0.2.3",
   "org.slf4j" % "slf4j-simple" % "1.7.21",
-  "org.asynchttpclient" % "async-http-client" % "2.0.28",
+  "org.apache.httpcomponents" % "httpclient" % "4.5.3",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 )
 

@@ -24,8 +24,8 @@ object Reporter {
     val fullNameDependencies = dependencies.map { m ⇒
       val remapVersion = m.crossVersion match {
         case Disabled  ⇒ None
-        case b: Binary ⇒ Option(scalaBinaryVersion)
-        case f: Full   ⇒ Option(scalaVersion)
+        case _: Binary ⇒ Option(scalaBinaryVersion)
+        case _: Full   ⇒ Option(scalaVersion)
       }
       val name = remapVersion.map(v ⇒ s"${m.name}_$v").getOrElse(m.name)
       m.copy(name = name)
