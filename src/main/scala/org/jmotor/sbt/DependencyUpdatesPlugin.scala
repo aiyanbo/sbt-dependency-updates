@@ -26,9 +26,14 @@ object DependencyUpdatesPlugin extends AutoPlugin {
         val bar = new ProgressBar("[info] Checking", "[info] Done checking.")
         bar.start()
         val pluginUpdates = Reporter.pluginUpdates(thisProject.value)
+        val globalPluginUpdates = Reporter.globalPluginUpdates(sbtBinaryVersion.value)
         val dependencyUpdates = Reporter.dependencyUpdates(libraryDependencies.value, scalaVersion.value, scalaBinaryVersion.value)
         bar.stop()
         val logger = streams.value.log
+        if (globalPluginUpdates.nonEmpty) {
+          logger.info("=================== Global Plugins ===================")
+          globalPluginUpdates.foreach(util.Logger.log)
+        }
         if (pluginUpdates.nonEmpty) {
           logger.info("====================== Plugins =======================")
           pluginUpdates.foreach(util.Logger.log)

@@ -1,12 +1,15 @@
 package org.jmotor.sbt
 
 import java.io.File
+import java.nio.file.{Files, Path, Paths}
 
 import org.jmotor.sbt.model.ModuleStatus
 import org.jmotor.sbt.service.ModuleUpdatesService
 import sbt.CrossVersion._
+import sbt.Keys.sbtBinaryVersion
 import sbt.{ModuleID, ResolvedProject}
 
+import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -34,22 +37,30 @@ object Reporter {
   }
 
   def pluginUpdates(project: ResolvedProject): Seq[ModuleStatus] = {
-    ModuleUpdatesService.resolve(plugins(project)).sortBy(_.status.id)
+    val dir = Paths.get(project.base.getAbsoluteFile + "/project/")
+    ModuleUpdatesService.resolve(plugins(dir)).sortBy(_.status.id)
   }
 
-  def plugins(project: ResolvedProject): Seq[ModuleID] = {
-    Try(
-      sbt.IO.readLines(new File(project.base.getAbsoluteFile + "/project/plugins.sbt"))
-    ) match {
-        case Success(lines) ⇒
-          lines.filter { line ⇒
-            val trimLine = line.trim
-            trimLine.nonEmpty && trimLine.startsWith("addSbtPlugin")
-          } map {
-            case addSbtPluginRegex(org, n, v) ⇒ ModuleID(org, n, v)
-          }
-        case Failure(_) ⇒ Seq.empty[ModuleID]
+  def globalPluginUpdates(sbtBinaryVersion: String): Seq[ModuleStatus] = {
+    val dir = Paths.get(s"${System.getProperty("user.home")}/.sbt/$sbtBinaryVersion/plugins/")
+    ModuleUpdatesService.resolve(plugins(dir)).sortBy(_.status.id)
+  }
+
+  def plugins(dir: Path): Seq[ModuleID] = {
+    Try {
+      Files.newDirectoryStream(dir, "*.sbt").asScala.toSeq.flatMap { path ⇒
+        Files.readAllLines(path).asScala
       }
+    } match {
+      case Success(lines) ⇒
+        lines.filter { line ⇒
+          val trimLine = line.trim
+          trimLine.nonEmpty && trimLine.startsWith("addSbtPlugin")
+        } map {
+          case addSbtPluginRegex(org, n, v) ⇒ ModuleID(org, n, v)
+        }
+      case Failure(_) ⇒ Seq.empty[ModuleID]
+    }
   }
 
 }

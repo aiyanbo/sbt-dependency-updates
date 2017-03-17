@@ -48,6 +48,8 @@ object ModuleUpdatesService {
         case 404 ⇒ ModuleStatus(module.organization, module.name, module.revision, Status.NotFound, "")
         case _   ⇒ ModuleStatus(module.organization, module.name, module.revision, Status.Error, "")
       }
+    } recover {
+      case t: Throwable ⇒ ModuleStatus(module.organization, module.name, module.revision, Status.Error, t.getLocalizedMessage)
     }
   }
 
