@@ -1,12 +1,10 @@
 package org.jmotor.sbt
 
-import java.io.File
 import java.nio.file.{Files, Path, Paths}
 
 import org.jmotor.sbt.model.ModuleStatus
 import org.jmotor.sbt.service.ModuleUpdatesService
 import sbt.CrossVersion._
-import sbt.Keys.sbtBinaryVersion
 import sbt.{ModuleID, ResolvedProject}
 
 import scala.collection.JavaConverters._
