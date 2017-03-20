@@ -15,7 +15,7 @@ Add the following line to one of these files:
 
 ```scala
 
-addSbtPlugin("org.jmotor.sbt" % "sbt-dependency-updates" % "1.0.6")
+addSbtPlugin("org.jmotor.sbt" % "sbt-dependency-updates" % "1.0.7")
 
 ```
 
