@@ -1,17 +1,17 @@
 package org.jmotor.sbt.service
 
-import java.util.concurrent.{Executors, TimeUnit}
+import java.util.concurrent.{ Executors, TimeUnit }
 
 import org.apache.http.client.methods.HttpGet
-import org.apache.http.impl.client.{CloseableHttpClient, HttpClients}
+import org.apache.http.impl.client.{ CloseableHttpClient, HttpClients }
 import org.apache.http.util.EntityUtils
-import org.jmotor.sbt.model.{ModuleStatus, Status}
+import org.jmotor.sbt.model.{ ModuleStatus, Status }
 import org.jmotor.sbt.util.ModuleStatusParser
 import sbt.ModuleID
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ Await, ExecutionContext, Future }
 
 /**
  * Component:

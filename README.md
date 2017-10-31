@@ -11,11 +11,19 @@ Display your SBT project's dependency updates.
 
 Add the following line to one of these files:
 - The project-specific file at `project/plugins.sbt`
-- Your global file at `~/.sbt/0.13/plugins/plugins.sbt`
+- Your global file at `~/.sbt/1.0/plugins/plugins.sbt` for sbt **1.0**
 
 ```scala
 
-addSbtPlugin("org.jmotor.sbt" % "sbt-dependency-updates" % "1.0.6")
+addSbtPlugin("org.jmotor.sbt" % "sbt-dependency-updates" % "1.1.0")
+
+```
+
+or `~/.sbt/0.13/plugins/plugins.sbt` for sbt **0.13**
+
+```scala
+
+addSbtPlugin("org.jmotor.sbt" % "sbt-dependency-updates" % "1.0.7")
 
 ```
 

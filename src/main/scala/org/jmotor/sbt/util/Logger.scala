@@ -3,7 +3,7 @@ package org.jmotor.sbt.util
 import fansi.Color._
 import org.apache.ivy.util.StringUtils
 import org.jmotor.sbt.model.Status._
-import org.jmotor.sbt.model.{ModuleStatus, Status}
+import org.jmotor.sbt.model.{ ModuleStatus, Status }
 
 /**
  * Component:

@@ -1,14 +1,15 @@
 package org.jmotor.sbt
 
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{ Files, Path, Paths }
 
 import org.jmotor.sbt.model.ModuleStatus
 import org.jmotor.sbt.service.ModuleUpdatesService
 import sbt.CrossVersion._
-import sbt.{ModuleID, ResolvedProject}
+import sbt.librarymanagement.Disabled
+import sbt.{ ModuleID, ResolvedProject }
 
 import scala.collection.JavaConverters._
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 /**
  * Component:
@@ -24,12 +25,12 @@ object Reporter {
   def dependencyUpdates(dependencies: Seq[ModuleID], scalaVersion: String, scalaBinaryVersion: String): Seq[ModuleStatus] = {
     val fullNameDependencies = dependencies.map { m ⇒
       val remapVersion = m.crossVersion match {
-        case Disabled  ⇒ None
-        case _: Binary ⇒ Option(scalaBinaryVersion)
-        case _: Full   ⇒ Option(scalaVersion)
+        case _: Disabled ⇒ None
+        case _: Binary   ⇒ Option(scalaBinaryVersion)
+        case _: Full     ⇒ Option(scalaVersion)
       }
       val name = remapVersion.map(v ⇒ s"${m.name}_$v").getOrElse(m.name)
-      m.copy(name = name)
+      m.withName(name)
     }
     ModuleUpdatesService.resolve(fullNameDependencies).sortBy(_.status.id)
   }

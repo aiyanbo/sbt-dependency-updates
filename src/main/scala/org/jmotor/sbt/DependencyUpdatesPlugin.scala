@@ -40,7 +40,6 @@ object DependencyUpdatesPlugin extends AutoPlugin {
         }
         logger.info("==================== Dependencies ====================")
         dependencyUpdates.foreach(util.Logger.log)
-      }
-    )
+      })
   }
 }
