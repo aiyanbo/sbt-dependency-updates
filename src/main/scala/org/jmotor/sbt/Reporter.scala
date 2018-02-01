@@ -4,6 +4,7 @@ import java.nio.file.{ Files, Path, Paths }
 
 import org.jmotor.sbt.model.ModuleStatus
 import org.jmotor.sbt.service.ModuleUpdatesService
+import org.jmotor.sbt.util.PluginParser
 import sbt.CrossVersion._
 import sbt.librarymanagement.Disabled
 import sbt.{ ModuleID, ResolvedProject }
@@ -19,8 +20,6 @@ import scala.util.{ Failure, Success, Try }
  * @author AI
  */
 object Reporter {
-
-  private[this] val addSbtPluginRegex = """addSbtPlugin\("([\w\.-]+)" *%{1,2} *"([\w\.-]+)"\ *% *"([\w\.-]+)"\)""".r
 
   def dependencyUpdates(dependencies: Seq[ModuleID], scalaVersion: String, scalaBinaryVersion: String): Seq[ModuleStatus] = {
     val fullNameDependencies = dependencies.map { m ⇒
@@ -52,12 +51,7 @@ object Reporter {
       }
     } match {
       case Success(lines) ⇒
-        lines.filter { line ⇒
-          val trimLine = line.trim
-          trimLine.nonEmpty && trimLine.startsWith("addSbtPlugin")
-        } map {
-          case addSbtPluginRegex(org, n, v) ⇒ ModuleID(org, n, v)
-        }
+        PluginParser.parseline(lines)
       case Failure(_) ⇒ Seq.empty[ModuleID]
     }
   }
