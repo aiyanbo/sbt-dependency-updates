@@ -50,9 +50,8 @@ object Reporter {
         Files.readAllLines(path).asScala
       }
     } match {
-      case Success(lines) ⇒
-        PluginParser.parseline(lines)
-      case Failure(_) ⇒ Seq.empty[ModuleID]
+      case Success(lines) ⇒ PluginParser.parseLine(lines)
+      case Failure(_)     ⇒ Seq.empty[ModuleID]
     }
   }
 

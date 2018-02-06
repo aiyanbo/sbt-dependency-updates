@@ -11,7 +11,7 @@ class PluginParserSpec extends FunSpec with Matchers {
         """
           |addSbtPlugin("org.jmotor.sbt" % "sbt-dependency-updates" % "1.1.0")
         """.stripMargin.split("\n")
-      val found = PluginParser.parseline(lines).toList
+      val found = PluginParser.parseLine(lines).toList
       found shouldBe Seq(ModuleID("org.jmotor.sbt", "sbt-dependency-updates", "1.1.0"))
     }
 
@@ -26,7 +26,7 @@ class PluginParserSpec extends FunSpec with Matchers {
           |
         """.stripMargin.split("\n")
 
-      val found = PluginParser.parseline(lines).toList
+      val found = PluginParser.parseLine(lines).toList
       found shouldBe Seq(
         ModuleID("org.jmotor.sbt", "sbt-dependency-updates", "1.1.0"),
         ModuleID("org.scalastyle", "scalastyle-sbt-plugin", "1.0.0"))
@@ -44,7 +44,7 @@ class PluginParserSpec extends FunSpec with Matchers {
           |) else scala.collection.Seq.empty%
         """.stripMargin.split("\n")
 
-      PluginParser.parseline(lines) shouldBe Seq(ModuleID("org.jetbrains", "sbt-idea-shell", "2017.2"))
+      PluginParser.parseLine(lines) shouldBe Seq(ModuleID("org.jetbrains", "sbt-idea-shell", "2017.2"))
     }
   }
 }
