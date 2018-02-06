@@ -15,8 +15,7 @@ class ModuleUpdatesServiceSpec extends FunSuite {
 
   test("Resolve") {
     val status = ModuleUpdatesService.resolve(Seq(
-      ModuleID("com.typesafe", "config", "1.3.0")
-    ))
+      ModuleID("com.typesafe", "config", "1.3.0")))
     assert(status.head.status == Status.Expired)
   }
 
