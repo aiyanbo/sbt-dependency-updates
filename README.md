@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/aiyanbo/sbt-dependency-updates.svg?branch=master)](https://travis-ci.org/aiyanbo/sbt-dependency-updates)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.jmotor.sbt/sbt-dependency-updates/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.jmotor.sbt/sbt-dependency-updates)
+[![Join the chat at https://gitter.im/aiyanbo/sbt-dependency-updates](https://badges.gitter.im/aiyanbo/sbt-dependency-updates.svg)](https://gitter.im/aiyanbo/sbt-dependency-updates?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Display your SBT project's dependency updates.
 
