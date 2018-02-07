@@ -29,17 +29,29 @@ object DependencyUpdatesPlugin extends AutoPlugin {
         val globalPluginUpdates = Reporter.globalPluginUpdates(sbtBinaryVersion.value)
         val dependencyUpdates = Reporter.dependencyUpdates(libraryDependencies.value, scalaVersion.value, scalaBinaryVersion.value)
         bar.stop()
-        val logger = streams.value.log
+        import fansi._
+        val style = Color.LightBlue ++ Reversed.On ++ Bold.On
+        val projectId = thisProject.value.id
+        val length = (100 - projectId.length) / 2
+        val separator = style(wrap(projectId, " ", length))
+        print(s"$separator \n")
         if (globalPluginUpdates.nonEmpty) {
-          logger.info("=================== Global Plugins ===================")
+          print(s"[info]  ${wrap("Global  Plugins", "-", 31)}\n")
           globalPluginUpdates.foreach(util.Logger.log)
         }
         if (pluginUpdates.nonEmpty) {
-          logger.info("====================== Plugins =======================")
+          print(s"[info]  ${wrap("Plugins", "-", 35)}\n")
           pluginUpdates.foreach(util.Logger.log)
         }
-        logger.info("==================== Dependencies ====================")
+        print(s"[info] ${wrap("Dependencies", "-", 33)}\n")
         dependencyUpdates.foreach(util.Logger.log)
       })
   }
+
+  private[sbt] def wrap(content: String, wrapWith: String, wrapLength: Int): String = {
+    val range = 0 to wrapLength
+    val wrapStr = range.map(_ ⇒ wrapWith).mkString
+    s"$wrapStr $content $wrapStr"
+  }
+
 }

@@ -4,15 +4,15 @@ organization := "org.jmotor.sbt"
 
 name := "sbt-dependency-updates"
 
-version := "1.1.1"
+version := "1.1.2"
 
 sbtPlugin := true
 
 libraryDependencies ++= Seq(
-  "com.lihaoyi" %% "fansi" % "0.2.3",
-  "org.slf4j" % "slf4j-simple" % "1.7.21",
-  "org.apache.httpcomponents" % "httpclient" % "4.5.3",
-  "org.scalatest" %% "scalatest" % "3.0.3" % "test"
+  "com.lihaoyi" %% "fansi" % "0.2.5",
+  "org.slf4j" % "slf4j-simple" % "1.7.25",
+  "org.apache.httpcomponents" % "httpclient" % "4.5.5",
+  "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 )
 
 crossSbtVersions := Seq("1.0.3", "0.13.16")
