@@ -3,7 +3,7 @@ package org.jmotor.sbt
 import java.nio.file.{ Files, Path, Paths }
 
 import org.jmotor.sbt.model.ModuleStatus
-import org.jmotor.sbt.service.ModuleUpdatesService
+import org.jmotor.sbt.resolver.VersionResolver
 import org.jmotor.sbt.util.PluginParser
 import sbt.CrossVersion._
 import sbt.librarymanagement.Disabled
@@ -21,7 +21,11 @@ import scala.util.{ Failure, Success, Try }
  */
 object Reporter {
 
-  def dependencyUpdates(dependencies: Seq[ModuleID], scalaVersion: String, scalaBinaryVersion: String): Seq[ModuleStatus] = {
+  def dependencyUpdates(
+    scalaVersion:       String,
+    scalaBinaryVersion: String,
+    dependencies:       Seq[ModuleID],
+    resolver:           VersionResolver): Seq[ModuleStatus] = {
     val fullNameDependencies = dependencies.map { m ⇒
       val remapVersion = m.crossVersion match {
         case _: Disabled ⇒ None
@@ -31,17 +35,17 @@ object Reporter {
       val name = remapVersion.map(v ⇒ s"${m.name}_$v").getOrElse(m.name)
       m.withName(name)
     }
-    ModuleUpdatesService.resolve(fullNameDependencies).sortBy(_.status.id)
+    fullNameDependencies map resolver.checkForUpdates sortBy (_.status.id)
   }
 
-  def pluginUpdates(project: ResolvedProject): Seq[ModuleStatus] = {
+  def pluginUpdates(project: ResolvedProject, resolver: VersionResolver, sbtVersion: String, scalaVersion: String): Seq[ModuleStatus] = {
     val dir = Paths.get(project.base.getAbsoluteFile + "/project/")
-    ModuleUpdatesService.resolve(plugins(dir)).sortBy(_.status.id)
+    plugins(dir) map (p ⇒ resolver.checkPluginForUpdates(p, sbtVersion, scalaVersion)) sortBy (_.status.id)
   }
 
-  def globalPluginUpdates(sbtBinaryVersion: String): Seq[ModuleStatus] = {
+  def globalPluginUpdates(sbtBinaryVersion: String, resolver: VersionResolver, sbtVersion: String, scalaVersion: String): Seq[ModuleStatus] = {
     val dir = Paths.get(s"${System.getProperty("user.home")}/.sbt/$sbtBinaryVersion/plugins/")
-    ModuleUpdatesService.resolve(plugins(dir)).sortBy(_.status.id)
+    plugins(dir) map (p ⇒ resolver.checkPluginForUpdates(p, sbtVersion, scalaVersion)) sortBy (_.status.id)
   }
 
   def plugins(dir: Path): Seq[ModuleID] = {

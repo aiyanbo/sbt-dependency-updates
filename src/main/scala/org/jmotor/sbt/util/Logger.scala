@@ -14,13 +14,13 @@ import org.jmotor.sbt.model.{ ModuleStatus, Status }
  */
 object Logger {
 
-  def log(moduleStatus: ModuleStatus): Unit = {
-    val status = moduleStatus.status
+  def log(module: ModuleStatus): Unit = {
+    val status = module.status
     val (color, message) = status match {
-      case Expired    ⇒ Yellow → s"${Blue("--->")} ${Red(moduleStatus.lastVersion)}"
-      case Unreleased ⇒ Yellow → s"${Blue("--->")} ${Red(moduleStatus.lastVersion)}"
+      case Expired    ⇒ Yellow → s"${Blue("--->")} ${Red(module.lastVersion)}"
+      case Unreleased ⇒ Yellow → s"${Blue("--->")} ${Red(module.lastVersion)}"
       case Success    ⇒ Green → Green("√")
-      case Error      ⇒ Red → "updates error, please retry!"
+      case Error      ⇒ Red → module.error.getOrElse("updates error, please retry!")
       case NotFound   ⇒ Red → Red("×")
       case s          ⇒ Red → Red(s"unknown status ${s.toString}")
     }
@@ -33,6 +33,7 @@ object Logger {
       }
     }
     val level = status.toString + StringUtils.repeat(" ", length - status.toString.length)
-    print(s"[${color(level)}] ${moduleStatus.id} $message \n")
+    print(s"[${color(level)}] ${module.raw} $message \n")
   }
+
 }

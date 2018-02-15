@@ -1,5 +1,6 @@
 package org.jmotor.sbt
 
+import org.jmotor.sbt.resolver.VersionResolver
 import org.jmotor.sbt.util.ProgressBar
 import sbt._
 import sbt.Keys._
@@ -23,11 +24,22 @@ object DependencyUpdatesPlugin extends AutoPlugin {
   def dependencyUpdatesForConfig(config: Configuration): Seq[_root_.sbt.Def.Setting[_]] = inConfig(config) {
     Seq(
       dependencyUpdates := {
+        val sbtVersionWithPrefix = s"sbt_${sbtBinaryVersion.value}"
+        val sbtScalaVersionWithPrefix = "scala_" + (sbtBinaryVersion.value match {
+          case "1.0" ⇒ "2.12"
+          case _     ⇒ "2.10"
+        })
+        val resolver = VersionResolver(fullResolvers.value, credentials.value)
         val bar = new ProgressBar("[info] Checking", "[info] Done checking.")
         bar.start()
-        val pluginUpdates = Reporter.pluginUpdates(thisProject.value)
-        val globalPluginUpdates = Reporter.globalPluginUpdates(sbtBinaryVersion.value)
-        val dependencyUpdates = Reporter.dependencyUpdates(libraryDependencies.value, scalaVersion.value, scalaBinaryVersion.value)
+        val pluginUpdates = Reporter.pluginUpdates(
+          thisProject.value,
+          resolver, sbtVersionWithPrefix, sbtScalaVersionWithPrefix)
+        val globalPluginUpdates = Reporter.globalPluginUpdates(
+          sbtBinaryVersion.value,
+          resolver, sbtVersionWithPrefix, sbtScalaVersionWithPrefix)
+        val dependencyUpdates = Reporter.dependencyUpdates(
+          scalaVersion.value, scalaBinaryVersion.value, libraryDependencies.value, resolver)
         bar.stop()
         import fansi._
         val style = Color.LightBlue ++ Reversed.On ++ Bold.On

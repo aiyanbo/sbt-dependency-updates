@@ -1,6 +1,7 @@
 package org.jmotor.sbt.model
 
 import org.jmotor.sbt.model.Status.Status
+import sbt.librarymanagement.ModuleID
 
 /**
  * Component:
@@ -9,8 +10,8 @@ import org.jmotor.sbt.model.Status.Status
  *
  * @author AI
  */
-final case class ModuleStatus(org: String, name: String, version: String, status: Status, lastVersion: String) {
+final case class ModuleStatus(module: ModuleID, status: Status, lastVersion: String, error: Option[String]) {
 
-  lazy val id: String = s"$org:$name:$version"
+  lazy val raw: String = s"${module.organization}:${module.name}:${module.revision}"
 
 }
