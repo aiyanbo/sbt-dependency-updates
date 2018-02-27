@@ -4,7 +4,7 @@ organization := "org.jmotor.sbt"
 
 name := "sbt-dependency-updates"
 
-version := "1.1.3"
+version := "1.1.4-SNAPSHOT"
 
 crossSbtVersions := Seq("1.0.3", "0.13.16")
 

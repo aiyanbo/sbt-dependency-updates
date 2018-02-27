@@ -2,8 +2,8 @@ package org.jmotor.sbt
 
 import java.nio.file.{ Files, Path, Paths }
 
-import org.jmotor.sbt.model.ModuleStatus
-import org.jmotor.sbt.resolver.VersionResolver
+import org.jmotor.sbt.dto.ModuleStatus
+import org.jmotor.sbt.service.VersionService
 import org.jmotor.sbt.util.PluginParser
 import sbt.CrossVersion._
 import sbt.librarymanagement.Disabled
@@ -25,7 +25,7 @@ object Reporter {
     scalaVersion:       String,
     scalaBinaryVersion: String,
     dependencies:       Seq[ModuleID],
-    resolver:           VersionResolver): Seq[ModuleStatus] = {
+    versionService:     VersionService): Seq[ModuleStatus] = {
     val fullNameDependencies = dependencies.map { m ⇒
       val remapVersion = m.crossVersion match {
         case _: Disabled ⇒ None
@@ -35,17 +35,19 @@ object Reporter {
       val name = remapVersion.map(v ⇒ s"${m.name}_$v").getOrElse(m.name)
       m.withName(name)
     }
-    fullNameDependencies map resolver.checkForUpdates sortBy (_.status.id)
+    fullNameDependencies map versionService.checkForUpdates sortBy (_.status.id)
   }
 
-  def pluginUpdates(project: ResolvedProject, resolver: VersionResolver, sbtVersion: String, scalaVersion: String): Seq[ModuleStatus] = {
+  def pluginUpdates(sbtBinaryVersion: String, project: ResolvedProject, versionService: VersionService): Seq[ModuleStatus] = {
     val dir = Paths.get(project.base.getAbsoluteFile + "/project/")
-    plugins(dir) map (p ⇒ resolver.checkPluginForUpdates(p, sbtVersion, scalaVersion)) sortBy (_.status.id)
+    val (sbtFullVersion, scalaFullVersion) = extractSbtFullVersions(sbtBinaryVersion)
+    plugins(dir) map (p ⇒ versionService.checkPluginForUpdates(p, sbtFullVersion, scalaFullVersion)) sortBy (_.status.id)
   }
 
-  def globalPluginUpdates(sbtBinaryVersion: String, resolver: VersionResolver, sbtVersion: String, scalaVersion: String): Seq[ModuleStatus] = {
+  def globalPluginUpdates(sbtBinaryVersion: String, versionService: VersionService): Seq[ModuleStatus] = {
     val dir = Paths.get(s"${System.getProperty("user.home")}/.sbt/$sbtBinaryVersion/plugins/")
-    plugins(dir) map (p ⇒ resolver.checkPluginForUpdates(p, sbtVersion, scalaVersion)) sortBy (_.status.id)
+    val (sbtFullVersion, scalaFullVersion) = extractSbtFullVersions(sbtBinaryVersion)
+    plugins(dir) map (p ⇒ versionService.checkPluginForUpdates(p, sbtFullVersion, scalaFullVersion)) sortBy (_.status.id)
   }
 
   def plugins(dir: Path): Seq[ModuleID] = {
@@ -57,6 +59,14 @@ object Reporter {
       case Success(lines) ⇒ PluginParser.parseLine(lines)
       case Failure(_)     ⇒ Seq.empty[ModuleID]
     }
+  }
+
+  private[sbt] def extractSbtFullVersions(sbtBinaryVersion: String): (String, String) = {
+    val scalaFullVersion = "scala_" + (sbtBinaryVersion match {
+      case "1.0" ⇒ "2.12"
+      case _     ⇒ "2.10"
+    })
+    s"sbt_$sbtBinaryVersion" -> scalaFullVersion
   }
 
 }

@@ -1,4 +1,4 @@
-package org.jmotor.sbt.resolver
+package org.jmotor.sbt.service
 
 import java.net.URL
 import java.nio.file.Paths
@@ -9,7 +9,7 @@ import org.asynchttpclient.{ AsyncHttpClient, Realm }
 import org.jmotor.artifact.Versions
 import org.jmotor.artifact.metadata.MetadataLoader
 import org.jmotor.artifact.metadata.loader.{ IvyPatternsMetadataLoader, MavenRepoMetadataLoader, MavenSearchMetadataLoader }
-import org.jmotor.sbt.model.{ ModuleStatus, Status }
+import org.jmotor.sbt.dto.{ ModuleStatus, Status }
 import sbt.Credentials
 import sbt.librarymanagement.{ MavenRepository, ModuleID, Resolver, URLRepository }
 
@@ -27,7 +27,7 @@ import scala.util.control.NonFatal
  *
  * @author AI
  */
-class VersionResolverImpl(resolvers: Seq[Resolver], credentials: Seq[Credentials]) extends VersionResolver {
+class VersionServiceImpl(resolvers: Seq[Resolver], credentials: Seq[Credentials]) extends VersionService {
 
   private[this] implicit lazy val client: AsyncHttpClient = {
     import org.asynchttpclient.Dsl._
@@ -57,16 +57,16 @@ class VersionResolverImpl(resolvers: Seq[Resolver], credentials: Seq[Credentials
         val versions = group.getVersions(module, sbtSettings)
         if (versions.nonEmpty) {
           val (max: ArtifactVersion, status: Status.Value) = getModuleStatus(mv, released, qualifierOpt, versions)
-          return ModuleStatus(module, status, max.toString, None)
+          return ModuleStatus(module, status, max.toString)
         }
       } catch {
         case NonFatal(t) ⇒ errors += t.getLocalizedMessage
       }
     }
     if (errors.nonEmpty) {
-      ModuleStatus(module, Status.Error, "", Option(errors mkString "\n"))
+      ModuleStatus(module, Status.Error, errors)
     } else {
-      ModuleStatus(module, Status.NotFound, "", None)
+      ModuleStatus(module, Status.NotFound)
     }
   }
 

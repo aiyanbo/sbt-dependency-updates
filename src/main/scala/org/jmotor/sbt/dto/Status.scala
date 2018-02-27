@@ -1,4 +1,4 @@
-package org.jmotor.sbt.model
+package org.jmotor.sbt.dto
 
 /**
  * Component:

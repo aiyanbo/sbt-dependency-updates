@@ -50,7 +50,7 @@
            enabled="true"></check>
     <check level="warning" class="org.scalastyle.scalariform.NoWhitespaceAfterLeftBracketChecker"
            enabled="true"></check>
-    <check level="warning" class="org.scalastyle.scalariform.ReturnChecker" enabled="true"></check>
+    <!--<check level="warning" class="org.scalastyle.scalariform.ReturnChecker" enabled="true"></check>-->
     <check level="warning" class="org.scalastyle.scalariform.NullChecker" enabled="true"></check>
     <check level="warning" class="org.scalastyle.scalariform.NoCloneChecker" enabled="true"></check>
     <check level="warning" class="org.scalastyle.scalariform.NoFinalizeChecker" enabled="true"></check>
