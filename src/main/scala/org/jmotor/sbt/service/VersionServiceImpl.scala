@@ -2,11 +2,14 @@ package org.jmotor.sbt.service
 
 import java.net.URL
 import java.nio.file.Paths
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.atomic.AtomicInteger
 
 import org.apache.maven.artifact.versioning.{ ArtifactVersion, DefaultArtifactVersion }
 import org.asynchttpclient.Realm.AuthScheme
 import org.asynchttpclient.{ AsyncHttpClient, Realm }
 import org.jmotor.artifact.Versions
+import org.jmotor.artifact.exception.ArtifactNotFoundException
 import org.jmotor.artifact.metadata.MetadataLoader
 import org.jmotor.artifact.metadata.loader.{ IvyPatternsMetadataLoader, MavenRepoMetadataLoader, MavenSearchMetadataLoader }
 import org.jmotor.sbt.dto.{ ModuleStatus, Status }
@@ -17,7 +20,7 @@ import scala.collection.mutable.ListBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, ExecutionContext, Future, Promise }
-import scala.util.Success
+import scala.util.{ Failure, Success }
 import scala.util.control.NonFatal
 
 /**
@@ -60,7 +63,9 @@ class VersionServiceImpl(resolvers: Seq[Resolver], credentials: Seq[Credentials]
           return ModuleStatus(module, status, max.toString)
         }
       } catch {
-        case NonFatal(t) ⇒ errors += t.getLocalizedMessage
+        case NonFatal(_: ArtifactNotFoundException) ⇒
+        case NonFatal(t: MultiException)            ⇒ errors ++= t.getMessages
+        case NonFatal(t)                            ⇒ errors += t.getLocalizedMessage
       }
     }
     if (errors.nonEmpty) {
@@ -149,10 +154,13 @@ class MetadataLoaderGroup(loaders: Seq[MetadataLoader]) {
   def firstCompletedOf(futures: TraversableOnce[Future[Seq[ArtifactVersion]]])
     (implicit executor: ExecutionContext): Future[Seq[ArtifactVersion]] = {
     val p = Promise[Seq[ArtifactVersion]]()
+    val futuresStatus = new FuturesStatus[Seq[ArtifactVersion]](p, futures.size, Seq.empty)
     futures foreach { future ⇒
       future.onComplete {
-        case Success(r) if r.nonEmpty ⇒ p success r
-        case _                        ⇒
+        case Success(r) if r.nonEmpty              ⇒ p success r
+        case Success(_)                            ⇒ futuresStatus.increment()
+        case Failure(_: ArtifactNotFoundException) ⇒ futuresStatus.increment()
+        case Failure(t)                            ⇒ futuresStatus.increment(t)
       }(scala.concurrent.ExecutionContext.Implicits.global)
     }
     p.future
@@ -175,3 +183,34 @@ object MetadataLoaderGroup {
 
 }
 
+case class MultiException(exceptions: Throwable*) extends RuntimeException {
+
+  def getMessages: Seq[String] = exceptions.map { e ⇒
+    if (Option(e.getLocalizedMessage).isDefined) e.getLocalizedMessage else e.getClass.getName
+  }
+
+}
+
+class FuturesStatus[T](p: Promise[T], length: Int, default: T) {
+  private[this] val counter = new AtomicInteger(0)
+  private[this] val errors = new CopyOnWriteArrayList[Throwable]()
+
+  def increment(): Unit = tryComplete()
+
+  def increment(throwable: Throwable): Unit = {
+    errors.add(throwable)
+    tryComplete()
+  }
+
+  private[this] def tryComplete(): Unit = {
+    if (counter.incrementAndGet() == length) {
+      if (errors.isEmpty) {
+        p success default
+      } else {
+        import scala.collection.JavaConverters._
+        p failure MultiException(errors.asScala: _*)
+      }
+    }
+  }
+
+}

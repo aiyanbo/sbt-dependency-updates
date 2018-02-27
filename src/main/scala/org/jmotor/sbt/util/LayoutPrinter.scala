@@ -16,7 +16,7 @@ object LayoutPrinter {
 
   def printStatus(module: ModuleStatus): Unit = {
     val status = module.status
-    lazy val errorMessages = if (module.errors.nonEmpty) module.errors.mkString("\n") else "updates error, please retry!"
+    lazy val errorMessages = if (module.errors.nonEmpty) s"\n${module.errors.mkString("\n")}\n" else "updates error, please retry!"
     val (color, message) = status match {
       case Expired    ⇒ Yellow → s"${Blue("--->")} ${Red(module.lastVersion)}"
       case Unreleased ⇒ Yellow → s"${Blue("--->")} ${Red(module.lastVersion)}"
@@ -50,7 +50,7 @@ object LayoutPrinter {
       globalPlugins.foreach(printStatus)
     }
     if (plugins.nonEmpty) {
-      print(s"[info]  ${wrap("Plugins", "-", titleWidth)}\n")
+      print(s"[info] ${wrap(" Plugins", "-", titleWidth)}\n")
       plugins.foreach(printStatus)
     }
     print(s"[info] ${wrap("Dependencies", "-", titleWidth)}\n")

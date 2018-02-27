@@ -9,7 +9,7 @@ object Dependencies {
     val scalaTest = "3.0.5"
     val scalaLogging = "3.7.2"
     val slf4jSimple = "1.7.25"
-    val artifactVersions = "1.0.0"
+    val artifactVersions = "1.0.1"
   }
 
   object Compile {
