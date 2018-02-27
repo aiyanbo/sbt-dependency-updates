@@ -46,7 +46,7 @@ object LayoutPrinter {
     val separator = style(wrap(projectId, " ", projectTitleWidth))
     print(s"$separator \n")
     if (globalPlugins.nonEmpty) {
-      print(s"[info]  ${wrap("Global  Plugins", "-", titleWidth)}\n")
+      print(s"[info] ${wrap("Global Plugins", "-", titleWidth)}\n")
       globalPlugins.foreach(printStatus)
     }
     if (plugins.nonEmpty) {
