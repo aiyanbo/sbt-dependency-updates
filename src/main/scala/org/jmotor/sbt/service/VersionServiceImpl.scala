@@ -14,7 +14,7 @@ import org.jmotor.artifact.metadata.MetadataLoader
 import org.jmotor.artifact.metadata.loader.{ IvyPatternsMetadataLoader, MavenRepoMetadataLoader, MavenSearchMetadataLoader }
 import org.jmotor.sbt.dto.{ ModuleStatus, Status }
 import sbt.Credentials
-import sbt.librarymanagement.{ MavenRepository, ModuleID, Resolver, URLRepository }
+import sbt.librarymanagement.{ Binary, Disabled, Full, MavenRepository, ModuleID, Resolver, URLRepository }
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -30,7 +30,11 @@ import scala.util.control.NonFatal
  *
  * @author AI
  */
-class VersionServiceImpl(resolvers: Seq[Resolver], credentials: Seq[Credentials]) extends VersionService {
+class VersionServiceImpl(
+    scalaVersion:       String,
+    scalaBinaryVersion: String,
+    resolvers:          Seq[Resolver],
+    credentials:        Seq[Credentials]) extends VersionService {
 
   private[this] implicit lazy val client: AsyncHttpClient = {
     import org.asynchttpclient.Dsl._
@@ -118,8 +122,8 @@ class VersionServiceImpl(resolvers: Seq[Resolver], credentials: Seq[Credentials]
       case _ ⇒ None
     } collect { case Some(loader) ⇒ loader })
     Seq(
-      MetadataLoaderGroup(new MavenSearchMetadataLoader()),
-      MetadataLoaderGroup(loaders: _*))
+      MetadataLoaderGroup(scalaVersion, scalaBinaryVersion, new MavenSearchMetadataLoader()),
+      MetadataLoaderGroup(scalaVersion, scalaBinaryVersion, loaders: _*))
   }
 
   private[this] def getRealm(url: String): Option[Realm] = {
@@ -135,7 +139,7 @@ class VersionServiceImpl(resolvers: Seq[Resolver], credentials: Seq[Credentials]
 
 }
 
-class MetadataLoaderGroup(loaders: Seq[MetadataLoader]) {
+class MetadataLoaderGroup(scalaVersion: String, scalaBinaryVersion: String, loaders: Seq[MetadataLoader]) {
 
   def getVersions(module: ModuleID, sbtSettings: Option[(String, String)]): Seq[ArtifactVersion] = {
     if (loaders.lengthCompare(1) > 0) {
@@ -158,20 +162,26 @@ class MetadataLoaderGroup(loaders: Seq[MetadataLoader]) {
     futures foreach { future ⇒
       future.onComplete {
         case Success(r) if r.nonEmpty              ⇒ p success r
-        case Success(_)                            ⇒ futuresStatus.increment()
-        case Failure(_: ArtifactNotFoundException) ⇒ futuresStatus.increment()
-        case Failure(t)                            ⇒ futuresStatus.increment(t)
+        case Success(_)                            ⇒ futuresStatus.tryComplete()
+        case Failure(_: ArtifactNotFoundException) ⇒ futuresStatus.tryComplete()
+        case Failure(t)                            ⇒ futuresStatus.tryComplete(t)
       }(scala.concurrent.ExecutionContext.Implicits.global)
     }
     p.future
   }
 
   def getArtifactId(loader: MetadataLoader, module: ModuleID, sbtSettings: Option[(String, String)]): String = {
+    val remapVersion = module.crossVersion match {
+      case _: Disabled ⇒ None
+      case _: Binary   ⇒ Option(scalaBinaryVersion)
+      case _: Full     ⇒ Option(scalaVersion)
+    }
+    val name = remapVersion.map(v ⇒ s"${module.name}_$v").getOrElse(module.name)
     loader match {
       case _: IvyPatternsMetadataLoader if sbtSettings.isDefined ⇒
         val settings = sbtSettings.get
-        Paths.get(module.name, settings._2, settings._1).toString
-      case _ ⇒ module.name
+        Paths.get(name, settings._2, settings._1).toString
+      case _ ⇒ name
     }
   }
 
@@ -179,7 +189,9 @@ class MetadataLoaderGroup(loaders: Seq[MetadataLoader]) {
 
 object MetadataLoaderGroup {
 
-  def apply(loaders: MetadataLoader*): MetadataLoaderGroup = new MetadataLoaderGroup(loaders)
+  def apply(scalaVersion: String, scalaBinaryVersion: String, loaders: MetadataLoader*): MetadataLoaderGroup = {
+    new MetadataLoaderGroup(scalaVersion, scalaBinaryVersion, loaders)
+  }
 
 }
 
@@ -195,14 +207,14 @@ class FuturesStatus[T](p: Promise[T], length: Int, default: T) {
   private[this] val counter = new AtomicInteger(0)
   private[this] val errors = new CopyOnWriteArrayList[Throwable]()
 
-  def increment(): Unit = tryComplete()
+  def tryComplete(): Unit = _tryComplete()
 
-  def increment(throwable: Throwable): Unit = {
+  def tryComplete(throwable: Throwable): Unit = {
     errors.add(throwable)
-    tryComplete()
+    _tryComplete()
   }
 
-  private[this] def tryComplete(): Unit = {
+  private[this] def _tryComplete(): Unit = {
     if (counter.incrementAndGet() == length) {
       if (errors.isEmpty) {
         p success default

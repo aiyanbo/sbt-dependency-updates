@@ -1,4 +1,4 @@
-package org.jmotor.sbt.util
+package org.jmotor.sbt.layout
 
 import fansi.Color._
 import org.apache.ivy.util.StringUtils
@@ -53,11 +53,13 @@ object LayoutPrinter {
       print(s"[info] ${wrap(" Plugins", "-", titleWidth)}\n")
       plugins.foreach(printStatus)
     }
-    print(s"[info] ${wrap("Dependencies", "-", titleWidth)}\n")
-    dependencies.foreach(printStatus)
+    if (dependencies.nonEmpty) {
+      print(s"[info] ${wrap("Dependencies", "-", titleWidth)}\n")
+      dependencies.foreach(printStatus)
+    }
   }
 
-  private[util] def wrap(content: String, wrapWith: String, width: Int): String = {
+  private[layout] def wrap(content: String, wrapWith: String, width: Int): String = {
     val wrapLength = (width - content.length) / 2
     val range = 0 to wrapLength
     val wrapStr = range.map(_ ⇒ wrapWith).mkString

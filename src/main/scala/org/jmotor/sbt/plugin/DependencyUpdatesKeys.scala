@@ -13,6 +13,8 @@ trait DependencyUpdatesKeys {
 
   lazy val dependencyUpdates: TaskKey[Unit] = taskKey[Unit]("Check for updates")
 
+  lazy val dependencyUpgrade: TaskKey[Unit] = taskKey[Unit]("Check for updates and upgrade [Experimental]")
+
 }
 
 object DependencyUpdatesKeys extends DependencyUpdatesKeys

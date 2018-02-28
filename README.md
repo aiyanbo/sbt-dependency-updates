@@ -30,4 +30,47 @@ addSbtPlugin("org.jmotor.sbt" % "sbt-dependency-updates" % "1.0.7")
 
 ## Tasks
 
-`dependencyUpdates`: show a list of project dependencies that can be updated
+- `dependencyUpdates`: show a list of project dependencies that can be updated
+- `dependencyUpgrade`: `Experimental` upgrade of project dependencies that can be updated
+
+### dependencyUpgrade
+
+- Add `project/Dependencies.scala` in your root project
+- `Dependencies.scala` as the following:
+
+```scala
+import sbt._
+
+object Dependencies {
+
+  // define versions, camel case style of the name
+  object Versions {
+    val fansi = "0.2.5"
+    val guava = "24.0-jre"
+    val scalaTest = "3.0.5"
+    val scala212 = "2.12.4"
+    val scala211 = "2.11.11"
+    val scalariform = "0.2.6"
+    val scalaLogging = "3.7.2"
+    val slf4jSimple = "1.7.25"
+  }
+
+  object Compile {
+    val fansi = "com.lihaoyi" %% "fansi" % Versions.fansi
+    val guava = "com.google.guava" % "guava" % Versions.guava
+    val slf4jSimple = "org.slf4j" % "slf4j-simple" % Versions.slf4jSimple
+    val scalariform = "org.scalariform" %% "scalariform" % Versions.scalariform
+  }
+
+  object Test {
+    val scalaTest: ModuleID = "org.scalatest" %% "scalatest" % Versions.scalaTest % "test"
+  }
+
+  import Compile._
+
+  lazy val dependencies = Seq(fansi, guava, slf4jSimple, scalariform, Test.scalaTest)
+
+}
+
+```
+

@@ -1,4 +1,4 @@
-package org.jmotor.sbt.util
+package org.jmotor.sbt.parser
 
 import sbt.ModuleID
 

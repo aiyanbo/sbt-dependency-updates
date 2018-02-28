@@ -1,5 +1,6 @@
 package org.jmotor.sbt.util
 
+import org.jmotor.sbt.parser.PluginParser
 import org.scalatest.{ FunSpec, Matchers }
 import sbt.ModuleID
 

@@ -1,15 +1,15 @@
-package org.jmotor.sbt.util
+package org.jmotor.sbt.layout
 
-import org.jmotor.sbt.util.LayoutPrinter.wrap
+import org.jmotor.sbt.layout.LayoutPrinter.wrap
 import org.scalatest.FunSuite
 
 /**
-  * Component:
-  * Description:
-  * Date: 2018/2/26
-  *
-  * @author AI
-  */
+ * Component:
+ * Description:
+ * Date: 2018/2/26
+ *
+ * @author AI
+ */
 class LayoutPrinterSpec extends FunSuite {
 
   test("print layout") {
@@ -19,6 +19,5 @@ class LayoutPrinterSpec extends FunSuite {
     val t3 = s"[info] ${wrap("Dependencies", "-", width)}"
     assert(t1.length == t2.length && t2.length == t3.length)
   }
-
 
 }

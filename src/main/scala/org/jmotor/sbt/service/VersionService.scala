@@ -21,8 +21,9 @@ trait VersionService {
 
 object VersionService {
 
-  def apply(resolvers: Seq[Resolver], credentials: Seq[Credentials]): VersionService = {
-    new VersionServiceImpl(resolvers, credentials)
+  def apply(scalaVersion: String, scalaBinaryVersion: String,
+            resolvers: Seq[Resolver], credentials: Seq[Credentials]): VersionService = {
+    new VersionServiceImpl(scalaVersion, scalaBinaryVersion, resolvers, credentials)
   }
 
 }
