@@ -43,11 +43,11 @@ import sbt._
 
 object Dependencies {
 
-  // define versions, camel case style of the name
+  // define versions, The variable name must be camel case by module name
   object Versions {
     val fansi = "0.2.5"
     val guava = "24.0-jre"
-    val scalaTest = "3.0.5"
+    val scalatest = "3.0.5"
     val scala212 = "2.12.4"
     val scala211 = "2.11.11"
     val scalariform = "0.2.6"
@@ -63,7 +63,7 @@ object Dependencies {
   }
 
   object Test {
-    val scalaTest: ModuleID = "org.scalatest" %% "scalatest" % Versions.scalaTest % "test"
+    val scalaTest: ModuleID = "org.scalatest" %% "scalatest" % Versions.scalatest % "test"
   }
 
   import Compile._
