@@ -32,10 +32,14 @@ object Updates {
           name -> m.lastVersion
       }.toMap
       lazy val matchedNames = ListBuffer[String]()
-      val versions = extractVersionLines(text).collect {
-        case versionRegex(name) if expiredModules.contains(name) ⇒
-          matchedNames += name
-          s"""val $name = "${expiredModules(name)}""""
+      val versions = extractVersionLines(text).map {
+        case v @ versionRegex(name) ⇒
+          expiredModules.find(_._1.equalsIgnoreCase(name)) match {
+            case None ⇒ v
+            case Some(version) ⇒
+              matchedNames += version._1
+              s"""val ${version._1} = "${version._2}""""
+          }
         case v ⇒ v
       }
       val appends = expiredModules.filterNot(v ⇒ matchedNames.contains(v._1)).map { v ⇒
