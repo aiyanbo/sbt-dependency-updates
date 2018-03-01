@@ -1,7 +1,7 @@
 package org.jmotor.sbt.plugin
 
 import org.jmotor.sbt.{ Reporter, Updates }
-import org.jmotor.sbt.layout.LayoutPrinter
+import org.jmotor.sbt.out.UpdatesPrinter
 import org.jmotor.sbt.service.VersionService
 import org.jmotor.sbt.util.ProgressBar
 import sbt.Keys._
@@ -33,7 +33,7 @@ object DependencyUpdatesSettings {
         val globalPluginUpdates = Reporter.globalPluginUpdates(sbtBinaryVersion.value, versionService)
         val dependencyUpdates = Reporter.dependencyUpdates(libraryDependencies.value, versionService)
         bar.stop()
-        LayoutPrinter.printReporter(thisProject.value.id, pluginUpdates, globalPluginUpdates, dependencyUpdates)
+        UpdatesPrinter.printReporter(thisProject.value.id, pluginUpdates, globalPluginUpdates, dependencyUpdates)
       },
       dependencyUpgrade := {
         val versionService = VersionService(

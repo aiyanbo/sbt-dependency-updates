@@ -1,6 +1,6 @@
-package org.jmotor.sbt.layout
+package org.jmotor.sbt.out
 
-import org.jmotor.sbt.layout.LayoutPrinter.wrap
+import org.jmotor.sbt.out.UpdatesPrinter.wrap
 import org.scalatest.FunSuite
 
 /**
@@ -10,7 +10,7 @@ import org.scalatest.FunSuite
  *
  * @author AI
  */
-class LayoutPrinterSpec extends FunSuite {
+class UpdatesPrinterSpec extends FunSuite {
 
   test("print layout") {
     val width = 80

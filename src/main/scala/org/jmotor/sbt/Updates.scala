@@ -4,11 +4,12 @@ import java.nio.file.{ Files, Path, Paths, StandardOpenOption }
 
 import com.google.common.base.CaseFormat
 import org.jmotor.sbt.dto.{ ModuleStatus, Status }
+import org.jmotor.sbt.parser.VersionParser._
 import sbt.ResolvedProject
 
 import scala.collection.mutable.ListBuffer
 import scala.io.Codec
-import sbt.Keys.streams
+
 import scalariform.formatter.ScalaFormatter
 
 /**
@@ -20,9 +21,6 @@ import scalariform.formatter.ScalaFormatter
  */
 object Updates {
 
-  private[sbt] lazy val versionRegex = """val ?(\w+) ?= ?".*"""".r
-  private[sbt] lazy val versionsObjectRegex = """[\t ]*object ?Versions ?\{([^{]*)[\t ]*\}""".r
-
   def applyUpdates(project: ResolvedProject, scalaVersion: String, updates: Seq[ModuleStatus]): Option[Int] = {
     getDependenciesPathOpt(project) map { path ⇒
       val text = new String(Files.readAllBytes(path), Codec.UTF8.charSet)
@@ -32,8 +30,8 @@ object Updates {
           name -> m.lastVersion
       }.toMap
       lazy val matchedNames = ListBuffer[String]()
-      val versions = extractVersionLines(text).map {
-        case v @ versionRegex(name) ⇒
+      val versions = parseVersionLines(text).map {
+        case v @ VersionRegex(name) ⇒
           expiredModules.find(_._1.equalsIgnoreCase(name)) match {
             case None ⇒ v
             case Some(version) ⇒
@@ -47,7 +45,7 @@ object Updates {
       }
       val _versions = (versions ++ appends).toSet.toSeq
       val newVersions = _versions.sortBy(_.length)
-      val newText = text.replaceFirst(versionsObjectRegex.regex, s"object Versions {\n${newVersions.mkString("\n")}\n}")
+      val newText = text.replaceFirst(VersionsObjectRegex.regex, s"object Versions {\n${newVersions.mkString("\n")}\n}")
       val result = ScalaFormatter.format(newText, scalaVersion = scalaVersion)
       Files.write(path, result.getBytes(Codec.UTF8.charSet), StandardOpenOption.WRITE)
       expiredModules.size
@@ -61,16 +59,6 @@ object Updates {
     } else {
       path = Paths.get(project.base.getParentFile.getPath, "project", "Dependencies.scala")
       Option(path).filter(p ⇒ Files.exists(p))
-    }
-  }
-
-  private[sbt] def extractVersionLines(text: String): Array[String] = {
-    (for (m ← versionsObjectRegex.findFirstMatchIn(text)) yield m.group(1)) match {
-      case None ⇒ Array.empty
-      case Some(v) ⇒
-        v.split("\n").map { line ⇒
-          line.replace("\t", "").trim
-        }.filter(_.nonEmpty)
     }
   }
 

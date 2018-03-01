@@ -1,4 +1,4 @@
-package org.jmotor.sbt.layout
+package org.jmotor.sbt.out
 
 import fansi.Color._
 import org.apache.ivy.util.StringUtils
@@ -12,7 +12,7 @@ import org.jmotor.sbt.dto.{ ModuleStatus, Status }
  *
  * @author AI
  */
-object LayoutPrinter {
+object UpdatesPrinter {
 
   def printStatus(module: ModuleStatus): Unit = {
     val status = module.status
@@ -59,7 +59,7 @@ object LayoutPrinter {
     }
   }
 
-  private[layout] def wrap(content: String, wrapWith: String, width: Int): String = {
+  private[out] def wrap(content: String, wrapWith: String, width: Int): String = {
     val wrapLength = (width - content.length) / 2
     val range = 0 to wrapLength
     val wrapStr = range.map(_ ⇒ wrapWith).mkString
