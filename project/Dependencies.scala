@@ -10,7 +10,7 @@ object Dependencies {
     val scala211 = "2.11.11"
     val scalariform = "0.2.6"
     val slf4jSimple = "1.7.25"
-    val artifactVersions = "1.0.1"
+    val artifactVersions = "1.0.2"
   }
 
   object Compile {

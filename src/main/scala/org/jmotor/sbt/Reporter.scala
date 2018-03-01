@@ -8,7 +8,9 @@ import org.jmotor.sbt.service.VersionService
 import sbt.{ ModuleID, ResolvedProject }
 
 import scala.collection.JavaConverters._
+import scala.concurrent.Future
 import scala.util.{ Failure, Success, Try }
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * Component:
@@ -21,20 +23,26 @@ object Reporter {
 
   def dependencyUpdates(
     dependencies:   Seq[ModuleID],
-    versionService: VersionService): Seq[ModuleStatus] = {
-    dependencies map versionService.checkForUpdates sortBy (_.status.id)
+    versionService: VersionService): Future[Seq[ModuleStatus]] = {
+    Future.traverse(dependencies)(versionService.checkForUpdates).map(_.sortBy(_.status.id))
   }
 
-  def pluginUpdates(sbtBinaryVersion: String, project: ResolvedProject, versionService: VersionService): Seq[ModuleStatus] = {
+  def pluginUpdates(
+    sbtBinaryVersion: String,
+    project:          ResolvedProject, versionService: VersionService): Future[Seq[ModuleStatus]] = {
     val dir = Paths.get(project.base.getPath, "project")
-    val (sbtFullVersion, scalaFullVersion) = extractSbtFullVersions(sbtBinaryVersion)
-    plugins(dir) map (p ⇒ versionService.checkPluginForUpdates(p, sbtFullVersion, scalaFullVersion)) sortBy (_.status.id)
+    val sbtScalaBinaryVersion = getSbtScalaBinaryVersion(sbtBinaryVersion)
+    Future.traverse(plugins(dir)) { module ⇒
+      versionService.checkPluginForUpdates(module, sbtBinaryVersion, sbtScalaBinaryVersion)
+    }.map(_.sortBy(_.status.id))
   }
 
-  def globalPluginUpdates(sbtBinaryVersion: String, versionService: VersionService): Seq[ModuleStatus] = {
+  def globalPluginUpdates(sbtBinaryVersion: String, versionService: VersionService): Future[Seq[ModuleStatus]] = {
     val dir = Paths.get(System.getProperty("user.home"), ".sbt", sbtBinaryVersion, "plugins")
-    val (sbtFullVersion, scalaFullVersion) = extractSbtFullVersions(sbtBinaryVersion)
-    plugins(dir) map (p ⇒ versionService.checkPluginForUpdates(p, sbtFullVersion, scalaFullVersion)) sortBy (_.status.id)
+    val sbtScalaBinaryVersion = getSbtScalaBinaryVersion(sbtBinaryVersion)
+    Future.traverse(plugins(dir)) { module ⇒
+      versionService.checkPluginForUpdates(module, sbtBinaryVersion, sbtScalaBinaryVersion)
+    }.map(_.sortBy(_.status.id))
   }
 
   def plugins(dir: Path): Seq[ModuleID] = {
@@ -48,12 +56,11 @@ object Reporter {
     }
   }
 
-  private[sbt] def extractSbtFullVersions(sbtBinaryVersion: String): (String, String) = {
-    val scalaFullVersion = "scala_" + (sbtBinaryVersion match {
+  private[sbt] def getSbtScalaBinaryVersion(sbtBinaryVersion: String): String = {
+    sbtBinaryVersion match {
       case "1.0" ⇒ "2.12"
       case _     ⇒ "2.10"
-    })
-    s"sbt_$sbtBinaryVersion" -> scalaFullVersion
+    }
   }
 
 }

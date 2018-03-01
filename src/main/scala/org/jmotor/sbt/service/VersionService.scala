@@ -4,6 +4,8 @@ import org.jmotor.sbt.dto.ModuleStatus
 import sbt.Credentials
 import sbt.librarymanagement.{ ModuleID, Resolver }
 
+import scala.concurrent.Future
+
 /**
  * Component:
  * Description:
@@ -13,9 +15,9 @@ import sbt.librarymanagement.{ ModuleID, Resolver }
  */
 trait VersionService {
 
-  def checkForUpdates(module: ModuleID): ModuleStatus
+  def checkForUpdates(module: ModuleID): Future[ModuleStatus]
 
-  def checkPluginForUpdates(module: ModuleID, sbtVersion: String, scalaVersion: String): ModuleStatus
+  def checkPluginForUpdates(module: ModuleID, sbtBinaryVersion: String, sbtScalaBinaryVersion: String): Future[ModuleStatus]
 
 }
 

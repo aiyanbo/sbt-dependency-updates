@@ -6,6 +6,8 @@ import org.jmotor.sbt.service.VersionService
 import org.jmotor.sbt.util.ProgressBar
 import sbt.Keys._
 import sbt._
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 /**
  * Component:
@@ -29,9 +31,12 @@ object DependencyUpdatesSettings {
           scalaBinaryVersion.value, fullResolvers.value, credentials.value)
         val bar = new ProgressBar("[info] Checking", "[info] Done checking.")
         bar.start()
-        val pluginUpdates = Reporter.pluginUpdates(sbtBinaryVersion.value, thisProject.value, versionService)
-        val globalPluginUpdates = Reporter.globalPluginUpdates(sbtBinaryVersion.value, versionService)
-        val dependencyUpdates = Reporter.dependencyUpdates(libraryDependencies.value, versionService)
+        val futureDependencyUpdates = Reporter.dependencyUpdates(libraryDependencies.value, versionService)
+        val futureGlobalPluginUpdates = Reporter.globalPluginUpdates(sbtBinaryVersion.value, versionService)
+        val futurePluginUpdates = Reporter.pluginUpdates(sbtBinaryVersion.value, thisProject.value, versionService)
+        val pluginUpdates = Await.result(futurePluginUpdates, (thisProject.value.autoPlugins.size * 10).seconds)
+        val dependencyUpdates = Await.result(futureDependencyUpdates, (libraryDependencies.value.size * 10).seconds)
+        val globalPluginUpdates = Await.result(futureGlobalPluginUpdates, (thisProject.value.autoPlugins.size * 10).seconds)
         bar.stop()
         UpdatesPrinter.printReporter(thisProject.value.id, pluginUpdates, globalPluginUpdates, dependencyUpdates)
       },
@@ -41,7 +46,8 @@ object DependencyUpdatesSettings {
           scalaBinaryVersion.value, fullResolvers.value, credentials.value)
         val bar = new ProgressBar("[info] Upgrading", "[info] Done upgrading.")
         bar.start()
-        val dependencyUpdates = Reporter.dependencyUpdates(libraryDependencies.value, versionService)
+        val futureDependencyUpdates = Reporter.dependencyUpdates(libraryDependencies.value, versionService)
+        val dependencyUpdates = Await.result(futureDependencyUpdates, (libraryDependencies.value.size * 10).seconds)
         bar.stop()
         val log = streams.value.log
         if (dependencyUpdates.nonEmpty) {

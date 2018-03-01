@@ -1,9 +1,6 @@
 package org.jmotor.sbt.service
 
 import java.net.URL
-import java.nio.file.Paths
-import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.atomic.AtomicInteger
 
 import org.apache.maven.artifact.versioning.{ ArtifactVersion, DefaultArtifactVersion }
 import org.asynchttpclient.Realm.AuthScheme
@@ -13,14 +10,13 @@ import org.jmotor.artifact.exception.ArtifactNotFoundException
 import org.jmotor.artifact.metadata.MetadataLoader
 import org.jmotor.artifact.metadata.loader.{ IvyPatternsMetadataLoader, MavenRepoMetadataLoader, MavenSearchMetadataLoader }
 import org.jmotor.sbt.dto.{ ModuleStatus, Status }
+import org.jmotor.sbt.exception.MultiException
+import org.jmotor.sbt.metadata.MetadataLoaderGroup
 import sbt.Credentials
-import sbt.librarymanagement.{ Binary, Disabled, Full, MavenRepository, ModuleID, Resolver, URLRepository }
+import sbt.librarymanagement.{ MavenRepository, ModuleID, Resolver, URLRepository }
 
-import scala.collection.mutable.ListBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
-import scala.concurrent.{ Await, ExecutionContext, Future, Promise }
-import scala.util.{ Failure, Success }
+import scala.concurrent.Future
 import scala.util.control.NonFatal
 
 /**
@@ -44,13 +40,13 @@ class VersionServiceImpl(
 
   private[this] lazy val groups = getLoaderGroups(resolvers, credentials)
 
-  override def checkForUpdates(module: ModuleID): ModuleStatus = check(module)
+  override def checkForUpdates(module: ModuleID): Future[ModuleStatus] = check(module)
 
-  override def checkPluginForUpdates(module: ModuleID, sbtVersion: String, scalaVersion: String): ModuleStatus = {
-    check(module, Option(sbtVersion -> scalaVersion))
+  override def checkPluginForUpdates(module: ModuleID, sbtBinaryVersion: String, sbtScalaBinaryVersion: String): Future[ModuleStatus] = {
+    check(module, Option(sbtBinaryVersion -> sbtScalaBinaryVersion))
   }
 
-  private[this] def check(module: ModuleID, sbtSettings: Option[(String, String)] = None): ModuleStatus = {
+  private[this] def check(module: ModuleID, sbtSettings: Option[(String, String)] = None): Future[ModuleStatus] = {
     val mv = new DefaultArtifactVersion(module.revision)
     val released = if (Option(mv.getQualifier).isDefined) {
       !Versions.UNRELEASED.exists(q ⇒ mv.getQualifier.toLowerCase.contains(q))
@@ -58,24 +54,25 @@ class VersionServiceImpl(
       true
     }
     val qualifierOpt = if (released && Option(mv.getQualifier).isDefined) Option(mv.getQualifier) else None
-    val errors = new ListBuffer[String]
-    groups.foreach { group ⇒
-      try {
-        val versions = group.getVersions(module, sbtSettings)
-        if (versions.nonEmpty) {
-          val (max: ArtifactVersion, status: Status.Value) = getModuleStatus(mv, released, qualifierOpt, versions)
-          return ModuleStatus(module, status, max.toString)
-        }
-      } catch {
-        case NonFatal(_: ArtifactNotFoundException) ⇒
-        case NonFatal(t: MultiException)            ⇒ errors ++= t.getMessages
-        case NonFatal(t)                            ⇒ errors += t.getLocalizedMessage
+    groups.foldLeft(Future.successful(Seq.empty[String] -> Option.empty[ModuleStatus])) { (future, group) ⇒
+      future.flatMap {
+        case (_, opt @ Some(_)) ⇒ Future.successful(Seq.empty[String] -> opt)
+        case (errors, _) ⇒
+          group.getVersions(module, sbtSettings).map {
+            case Nil ⇒ errors -> None
+            case versions ⇒
+              val (max: ArtifactVersion, status: Status.Value) = getModuleStatus(mv, released, qualifierOpt, versions)
+              Seq.empty[String] -> Option(ModuleStatus(module, status, max.toString))
+          } recover {
+            case NonFatal(_: ArtifactNotFoundException) ⇒ errors -> None
+            case NonFatal(t: MultiException)            ⇒ (errors ++ t.getMessages) -> None
+            case NonFatal(t)                            ⇒ (errors :+ t.getLocalizedMessage) -> None
+          }
       }
-    }
-    if (errors.nonEmpty) {
-      ModuleStatus(module, Status.Error, errors)
-    } else {
-      ModuleStatus(module, Status.NotFound)
+    } map {
+      case (_, Some(status))              ⇒ status
+      case (errors, _) if errors.nonEmpty ⇒ ModuleStatus(module, Status.Error, errors)
+      case _                              ⇒ ModuleStatus(module, Status.NotFound)
     }
   }
 
@@ -135,94 +132,6 @@ class VersionServiceImpl(
 
   private[this] def isRemote(url: String): Boolean = {
     url.startsWith("http://") || url.startsWith("https://")
-  }
-
-}
-
-class MetadataLoaderGroup(scalaVersion: String, scalaBinaryVersion: String, loaders: Seq[MetadataLoader]) {
-
-  def getVersions(module: ModuleID, sbtSettings: Option[(String, String)]): Seq[ArtifactVersion] = {
-    if (loaders.lengthCompare(1) > 0) {
-      val future = firstCompletedOf(loaders.map { loader ⇒
-        loader.getVersions(module.organization, getArtifactId(loader, module, sbtSettings))
-      })
-      Await.result(future, 30.seconds)
-    } else {
-      loaders.headOption.fold(Seq.empty[ArtifactVersion]) { loader ⇒
-        val future = loader.getVersions(module.organization, getArtifactId(loader, module, sbtSettings))
-        Await.result(future, 10.seconds)
-      }
-    }
-  }
-
-  def firstCompletedOf(futures: TraversableOnce[Future[Seq[ArtifactVersion]]])
-    (implicit executor: ExecutionContext): Future[Seq[ArtifactVersion]] = {
-    val p = Promise[Seq[ArtifactVersion]]()
-    val futuresStatus = new FuturesStatus[Seq[ArtifactVersion]](p, futures.size, Seq.empty)
-    futures foreach { future ⇒
-      future.onComplete {
-        case Success(r) if r.nonEmpty              ⇒ p success r
-        case Success(_)                            ⇒ futuresStatus.tryComplete()
-        case Failure(_: ArtifactNotFoundException) ⇒ futuresStatus.tryComplete()
-        case Failure(t)                            ⇒ futuresStatus.tryComplete(t)
-      }(scala.concurrent.ExecutionContext.Implicits.global)
-    }
-    p.future
-  }
-
-  def getArtifactId(loader: MetadataLoader, module: ModuleID, sbtSettings: Option[(String, String)]): String = {
-    val remapVersion = module.crossVersion match {
-      case _: Disabled ⇒ None
-      case _: Binary   ⇒ Option(scalaBinaryVersion)
-      case _: Full     ⇒ Option(scalaVersion)
-    }
-    val name = remapVersion.map(v ⇒ s"${module.name}_$v").getOrElse(module.name)
-    loader match {
-      case _: IvyPatternsMetadataLoader if sbtSettings.isDefined ⇒
-        val settings = sbtSettings.get
-        Paths.get(name, settings._2, settings._1).toString
-      case _ ⇒ name
-    }
-  }
-
-}
-
-object MetadataLoaderGroup {
-
-  def apply(scalaVersion: String, scalaBinaryVersion: String, loaders: MetadataLoader*): MetadataLoaderGroup = {
-    new MetadataLoaderGroup(scalaVersion, scalaBinaryVersion, loaders)
-  }
-
-}
-
-case class MultiException(exceptions: Throwable*) extends RuntimeException {
-
-  def getMessages: Seq[String] = exceptions.map { e ⇒
-    if (Option(e.getLocalizedMessage).isDefined) e.getLocalizedMessage else e.getClass.getName
-  }
-
-}
-
-class FuturesStatus[T](p: Promise[T], length: Int, default: T) {
-  private[this] val counter = new AtomicInteger(0)
-  private[this] val errors = new CopyOnWriteArrayList[Throwable]()
-
-  def tryComplete(): Unit = _tryComplete()
-
-  def tryComplete(throwable: Throwable): Unit = {
-    errors.add(throwable)
-    _tryComplete()
-  }
-
-  private[this] def _tryComplete(): Unit = {
-    if (counter.incrementAndGet() == length) {
-      if (errors.isEmpty) {
-        p success default
-      } else {
-        import scala.collection.JavaConverters._
-        p failure MultiException(errors.asScala: _*)
-      }
-    }
   }
 
 }
