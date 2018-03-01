@@ -2,24 +2,23 @@ package org.jmotor.sbt.service
 
 import org.jmotor.sbt.dto.Status
 import org.scalatest.FunSuite
-import sbt.librarymanagement.{MavenRepo, ModuleID, Resolver}
+import sbt.librarymanagement.{ MavenRepo, ModuleID, Resolver }
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
 /**
-  * Component:
-  * Description:
-  * Date: 2018/3/1
-  *
-  * @author AI
-  */
-class VersionServiceSpec extends FunSuite{
+ * Component:
+ * Description:
+ * Date: 2018/3/1
+ *
+ * @author AI
+ */
+class VersionServiceSpec extends FunSuite {
 
   private[this] val resolvers = Seq(
     MavenRepo("ali-maven", "http://maven.aliyun.com/nexus/content/groups/public/"),
-    Resolver.bintrayIvyRepo("sbt","sbt-plugin-releases")
-  )
+    Resolver.bintrayIvyRepo("sbt", "sbt-plugin-releases"))
 
   test("check normal module") {
     val versionService = VersionService("2.12.4", "2.12", resolvers, Seq.empty)
