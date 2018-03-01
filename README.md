@@ -74,3 +74,7 @@ object Dependencies {
 
 ```
 
+You can download an example project with this layout here:
+
+- [sbt-simple-project](https://github.com/aiyanbo/sbt-simple-project)
+
