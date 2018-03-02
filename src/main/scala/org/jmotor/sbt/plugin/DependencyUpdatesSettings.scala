@@ -48,21 +48,22 @@ object DependencyUpdatesSettings {
       val dependencyUpdates = Await.result(futureDependencyUpdates, (libraryDependencies.value.size * 10).seconds)
       bar.stop()
       val log = streams.value.log
+      val projectId = thisProject.value.id
       if (dependencyUpdates.nonEmpty) {
         Updates.applyDependencyUpdates(
           thisProject.value,
           scalaVersion.value, dependencyUpdates, dependencyUpdatesModuleNames.value) match {
             case None       ⇒ log.error("can not found Dependencies.scala")
-            case Some(size) ⇒ log.success(s"$size dependencies upgraded")
+            case Some(size) ⇒ log.success(s"$projectId: $size dependencies upgraded")
           }
       } else {
-        log.info("dependencies nothing to upgrade")
+        log.info(s"$projectId: dependencies nothing to upgrade")
       }
       if (pluginUpdates.nonEmpty) {
         val size = Updates.applyPluginUpdates(thisProject.value, scalaVersion.value, pluginUpdates)
-        log.success(s"$size plugins upgraded")
+        log.success(s"$projectId: $size plugins upgraded")
       } else {
-        log.info("plugins nothing to upgrade")
+        log.info(s"$projectId: plugins nothing to upgrade")
       }
     })
 
