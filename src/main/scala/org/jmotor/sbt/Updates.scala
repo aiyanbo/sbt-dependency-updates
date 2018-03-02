@@ -4,13 +4,16 @@ import java.nio.file.{ Files, Path, Paths, StandardOpenOption }
 
 import com.google.common.base.CaseFormat
 import org.jmotor.sbt.dto.{ ModuleStatus, Status }
+import org.jmotor.sbt.parser.PluginParser
 import org.jmotor.sbt.parser.VersionParser._
 import sbt.ResolvedProject
+import sbt.librarymanagement.ModuleID
 
 import scala.collection.mutable.ListBuffer
 import scala.io.Codec
-
+import scala.util.{ Failure, Success, Try }
 import scalariform.formatter.ScalaFormatter
+import scala.collection.JavaConverters._
 
 /**
  * Component:
@@ -21,12 +24,13 @@ import scalariform.formatter.ScalaFormatter
  */
 object Updates {
 
-  def applyUpdates(project: ResolvedProject, scalaVersion: String, updates: Seq[ModuleStatus]): Option[Int] = {
+  def applyDependencyUpdates(project: ResolvedProject, scalaVersion: String,
+                             updates: Seq[ModuleStatus], nameMappings: Map[String, String]): Option[Int] = {
     getDependenciesPathOpt(project) map { path ⇒
       val text = new String(Files.readAllBytes(path), Codec.UTF8.charSet)
       val expiredModules = updates.collect {
         case m if m.status == Status.Expired ⇒
-          val name = CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, m.module.name)
+          val name = mappingModuleName(m.module, nameMappings)
           name -> m.lastVersion
       }.toMap
       lazy val matchedNames = ListBuffer[String]()
@@ -52,6 +56,25 @@ object Updates {
     }
   }
 
+  def applyPluginUpdates(project: ResolvedProject, scalaVersion: String, updates: Seq[ModuleStatus]): Int = {
+    val expiredModules = updates.filter(_.status == Status.Expired)
+    getPluginSources(project).foreach {
+      case (path, lines) ⇒
+        val text = lines.map {
+          case line if line.startsWith("addSbtPlugin") ⇒
+            line match {
+              case PluginParser.AddSbtPluginRegex(org, n, v) ⇒
+                val module = expiredModules.find(s ⇒ s.module.organization == org && s.module.name == n)
+                module.map(s ⇒ line.replace(v, s.lastVersion)).getOrElse(line)
+              case _ ⇒ line
+            }
+          case line ⇒ line
+        }.mkString("\n")
+        Files.write(path, text.getBytes(Codec.UTF8.charSet), StandardOpenOption.WRITE)
+    }
+    expiredModules.size
+  }
+
   private[sbt] def getDependenciesPathOpt(project: ResolvedProject): Option[Path] = {
     var path = Paths.get(project.base.getPath, "project", "Dependencies.scala")
     if (Files.exists(path)) {
@@ -60,6 +83,25 @@ object Updates {
       path = Paths.get(project.base.getParentFile.getPath, "project", "Dependencies.scala")
       Option(path).filter(p ⇒ Files.exists(p))
     }
+  }
+
+  private[sbt] def getPluginSources(project: ResolvedProject): Seq[(Path, Seq[String])] = {
+    Try {
+      val dir = Paths.get(project.base.getPath, "project")
+      Files.newDirectoryStream(dir, "*.sbt").asScala.toSeq.map { path ⇒
+        path -> Files.readAllLines(path).asScala
+      }
+    } match {
+      case Success(sources) ⇒ sources
+      case Failure(_)       ⇒ Seq.empty
+    }
+  }
+
+  private[sbt] def mappingModuleName(module: ModuleID, nameMappings: Map[String, String]): String = {
+    val name = module.name
+    nameMappings.getOrElse(name, {
+      CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, name)
+    })
   }
 
 }

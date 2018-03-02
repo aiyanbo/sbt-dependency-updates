@@ -8,9 +8,9 @@ import org.jmotor.sbt.service.VersionService
 import sbt.{ ModuleID, ResolvedProject }
 
 import scala.collection.JavaConverters._
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{ Failure, Success, Try }
-import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * Component:
@@ -19,17 +19,15 @@ import scala.concurrent.ExecutionContext.Implicits.global
  *
  * @author AI
  */
-object Reporter {
+class Reporter(versionService: VersionService) {
 
-  def dependencyUpdates(
-    dependencies:   Seq[ModuleID],
-    versionService: VersionService): Future[Seq[ModuleStatus]] = {
+  def dependencyUpdates(dependencies: Seq[ModuleID]): Future[Seq[ModuleStatus]] = {
     Future.traverse(dependencies)(versionService.checkForUpdates).map(_.sortBy(_.status.id))
   }
 
   def pluginUpdates(
     sbtBinaryVersion: String,
-    project:          ResolvedProject, versionService: VersionService): Future[Seq[ModuleStatus]] = {
+    project:          ResolvedProject): Future[Seq[ModuleStatus]] = {
     val dir = Paths.get(project.base.getPath, "project")
     val sbtScalaBinaryVersion = getSbtScalaBinaryVersion(sbtBinaryVersion)
     Future.traverse(plugins(dir)) { module ⇒
@@ -37,7 +35,7 @@ object Reporter {
     }.map(_.sortBy(_.status.id))
   }
 
-  def globalPluginUpdates(sbtBinaryVersion: String, versionService: VersionService): Future[Seq[ModuleStatus]] = {
+  def globalPluginUpdates(sbtBinaryVersion: String): Future[Seq[ModuleStatus]] = {
     val dir = Paths.get(System.getProperty("user.home"), ".sbt", sbtBinaryVersion, "plugins")
     val sbtScalaBinaryVersion = getSbtScalaBinaryVersion(sbtBinaryVersion)
     Future.traverse(plugins(dir)) { module ⇒
@@ -62,5 +60,11 @@ object Reporter {
       case _     ⇒ "2.10"
     }
   }
+
+}
+
+object Reporter {
+
+  def apply(versionService: VersionService): Reporter = new Reporter(versionService)
 
 }
