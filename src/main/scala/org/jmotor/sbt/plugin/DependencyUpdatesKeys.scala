@@ -15,7 +15,7 @@ trait DependencyUpdatesKeys {
 
   lazy val dependencyUpgrade: TaskKey[Unit] = taskKey[Unit]("Check for updates and upgrade [Experimental]")
 
-  lazy val dependencyUpdatesModuleNames: SettingKey[Map[String, String]] = settingKey[Map[String, String]]("Module name mappings")
+  lazy val dependencyUpgradeModuleNames: SettingKey[Map[String, String]] = settingKey[Map[String, String]]("Module name mappings")
 
 }
 

@@ -22,7 +22,7 @@ object DependencyUpdatesSettings {
   import DependencyUpdatesKeys._
 
   def updatesSettings: Seq[Setting[_]] = Seq(
-    dependencyUpdatesModuleNames := Map.empty[String, String],
+    dependencyUpgradeModuleNames := Map.empty[String, String],
     dependencyUpdates := {
       val reporter = Reporter(VersionService(
         scalaVersion.value, scalaBinaryVersion.value, fullResolvers.value, credentials.value))
@@ -52,7 +52,7 @@ object DependencyUpdatesSettings {
       if (dependencyUpdates.nonEmpty) {
         Updates.applyDependencyUpdates(
           thisProject.value,
-          scalaVersion.value, dependencyUpdates, dependencyUpdatesModuleNames.value) match {
+          scalaVersion.value, dependencyUpdates, dependencyUpgradeModuleNames.value) match {
             case None       ⇒ log.error("can not found Dependencies.scala")
             case Some(size) ⇒ log.success(s"$projectId: $size dependencies upgraded")
           }

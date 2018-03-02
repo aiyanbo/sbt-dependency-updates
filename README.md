@@ -78,3 +78,17 @@ You can download an example project with this layout here:
 
 - [sbt-simple-project](https://github.com/aiyanbo/sbt-simple-project)
 
+## Settings
+
+- `dependencyUpgradeModuleNames`: a setting to customize the mapping of module name
+
+E.g. in `build.sbt` you can change configuration settings like this:
+
+```scala
+  dependencyUpgradeModuleNames := Map(
+    "guice-multibindings" -> "guice",
+    "undertow-core" -> "undertow",
+    "undertow-servlet" -> "undertow",
+    "undertow-websockets-jsr" -> "undertow"
+  )
+```
