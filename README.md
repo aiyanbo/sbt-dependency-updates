@@ -46,19 +46,19 @@ object Dependencies {
   // define versions, The variable name must be camel case by module name
   object Versions {
     val fansi = "0.2.5"
+    val slf4j = "1.7.25"
     val guava = "24.0-jre"
     val scalatest = "3.0.5"
     val scala212 = "2.12.4"
     val scala211 = "2.11.11"
     val scalariform = "0.2.6"
     val scalaLogging = "3.7.2"
-    val slf4jSimple = "1.7.25"
   }
 
   object Compile {
     val fansi = "com.lihaoyi" %% "fansi" % Versions.fansi
     val guava = "com.google.guava" % "guava" % Versions.guava
-    val slf4jSimple = "org.slf4j" % "slf4j-simple" % Versions.slf4jSimple
+    val slf4jSimple = "org.slf4j" % "slf4j-simple" % Versions.slf4j
     val scalariform = "org.scalariform" %% "scalariform" % Versions.scalariform
   }
 
@@ -86,9 +86,6 @@ E.g. in `build.sbt` you can change configuration settings like this:
 
 ```scala
   dependencyUpgradeModuleNames := Map(
-    "guice-multibindings" -> "guice",
-    "undertow-core" -> "undertow",
-    "undertow-servlet" -> "undertow",
-    "undertow-websockets-jsr" -> "undertow"
+    "slf4j-simple" -> "slf4j"
   )
 ```
