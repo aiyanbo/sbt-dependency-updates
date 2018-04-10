@@ -16,7 +16,7 @@ Add the following line to one of these files:
 
 ```scala
 
-addSbtPlugin("org.jmotor.sbt" % "sbt-dependency-updates" % "1.1.4")
+addSbtPlugin("org.jmotor.sbt" % "sbt-dependency-updates" % "1.1.5")
 
 ```
 
@@ -30,8 +30,8 @@ addSbtPlugin("org.jmotor.sbt" % "sbt-dependency-updates" % "1.0.7")
 
 ## Tasks
 
-- `dependencyUpdates`: show a list of project dependencies that can be updated
-- `dependencyUpgrade`: `Experimental` upgrade of project dependencies that can be updated
+- `dependencyUpdates`: show a list of project dependencies and plugins that can be updated
+- `dependencyUpgrade`: `Experimental` upgrade of project dependencies and plugins that can be updated
 
 ### dependencyUpgrade
 
