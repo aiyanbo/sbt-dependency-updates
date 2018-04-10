@@ -1,5 +1,7 @@
 package org.jmotor.sbt.plugin
 
+import java.util.concurrent.Callable
+
 import org.jmotor.sbt.out.UpdatesPrinter
 import org.jmotor.sbt.service.VersionService
 import org.jmotor.sbt.util.ProgressBar
@@ -35,7 +37,13 @@ object DependencyUpdatesSettings {
       val dependencyUpdates = Await.result(futureDependencyUpdates, (libraryDependencies.value.size * 10).seconds)
       val globalPluginUpdates = Await.result(futureGlobalPluginUpdates, (thisProject.value.autoPlugins.size * 10).seconds)
       bar.stop()
-      UpdatesPrinter.printReporter(thisProject.value.id, pluginUpdates, globalPluginUpdates, dependencyUpdates)
+      val lock = appConfiguration.value.provider().scalaProvider().launcher().globalLock()
+      val lockFile = new File("../.updates.lock")
+      lock(lockFile, new Callable[Unit] {
+        override def call(): Unit = {
+          UpdatesPrinter.printReporter(thisProject.value.id, pluginUpdates, globalPluginUpdates, dependencyUpdates)
+        }
+      })
     },
     dependencyUpgrade := {
       val reporter = Reporter(VersionService(
@@ -49,19 +57,29 @@ object DependencyUpdatesSettings {
       bar.stop()
       val log = streams.value.log
       val projectId = thisProject.value.id
+      val lock = appConfiguration.value.provider().scalaProvider().launcher().globalLock()
+      val lockFile = new File("../.upgrades.lock")
       if (dependencyUpdates.nonEmpty) {
-        Updates.applyDependencyUpdates(
-          thisProject.value,
-          scalaVersion.value, dependencyUpdates, dependencyUpgradeModuleNames.value) match {
-            case None       ⇒ log.error("can not found Dependencies.scala")
-            case Some(size) ⇒ log.success(s"$projectId: $size dependencies upgraded")
+        lock(lockFile, new Callable[Unit] {
+          override def call(): Unit = {
+            Updates.applyDependencyUpdates(
+              thisProject.value,
+              scalaVersion.value, dependencyUpdates, dependencyUpgradeModuleNames.value) match {
+                case None       ⇒ log.error("can not found Dependencies.scala")
+                case Some(size) ⇒ log.success(s"$projectId: $size dependencies upgraded")
+              }
           }
+        })
       } else {
         log.info(s"$projectId: dependencies nothing to upgrade")
       }
       if (pluginUpdates.nonEmpty) {
-        val size = Updates.applyPluginUpdates(thisProject.value, scalaVersion.value, pluginUpdates)
-        log.success(s"$projectId: $size plugins upgraded")
+        lock(lockFile, new Callable[Unit] {
+          override def call(): Unit = {
+            val size = Updates.applyPluginUpdates(thisProject.value, scalaVersion.value, pluginUpdates)
+            log.success(s"$projectId: $size plugins upgraded")
+          }
+        })
       } else {
         log.info(s"$projectId: plugins nothing to upgrade")
       }

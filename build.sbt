@@ -4,7 +4,7 @@ organization := "org.jmotor.sbt"
 
 name := "sbt-dependency-updates"
 
-version := "1.1.5"
+version := "1.1.6-SNAPSHOT"
 
 scalacOptions ++= Seq("-deprecation", "-unchecked")
 
