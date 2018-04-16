@@ -4,10 +4,8 @@ object Dependencies {
 
   object Versions {
     val fansi = "0.2.5"
-    val guava = "24.0-jre"
+    val guava = "24.1-jre"
     val scalatest = "3.0.5"
-    val scala212 = "2.12.4"
-    val scala211 = "2.11.11"
     val scalariform = "0.2.6"
     val slf4jSimple = "1.7.25"
     val artifactVersions = "1.0.2"
