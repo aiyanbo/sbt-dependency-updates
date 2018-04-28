@@ -86,6 +86,7 @@ E.g. in `build.sbt` you can change configuration settings like this:
 
 ```scala
   dependencyUpgradeModuleNames := Map(
-    "slf4j-simple" -> "slf4j"
+    "slf4j-simple" -> "slf4j",
+    "undertow.*" -> "undertow"
   )
 ```
