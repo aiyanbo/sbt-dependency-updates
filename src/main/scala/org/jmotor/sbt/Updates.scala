@@ -30,7 +30,7 @@ object Updates {
       val text = new String(Files.readAllBytes(path), Codec.UTF8.charSet)
       val expiredModules = updates.collect {
         case m if m.status == Status.Expired ⇒
-          val name = mappingModuleName(m.module, nameMappings)
+          val name = mappingModuleName(m.module.name, nameMappings)
           name -> m.lastVersion
       }.toMap
       lazy val matchedNames = ListBuffer[String]()
@@ -97,11 +97,15 @@ object Updates {
     }
   }
 
-  private[sbt] def mappingModuleName(module: ModuleID, nameMappings: Map[String, String]): String = {
-    val name = module.name
-    nameMappings.getOrElse(name, {
-      CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, name)
-    })
+  private[sbt] def mappingModuleName(moduleName: String, nameMappings: Map[String, String]): String = {
+    val nameMapping = nameMappings.find {
+      case (k, _) ⇒
+        lazy val matched = moduleName.matches(k)
+        k == moduleName || matched
+    }
+    nameMapping.map(_._2).getOrElse {
+      CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, moduleName)
+    }
   }
 
 }

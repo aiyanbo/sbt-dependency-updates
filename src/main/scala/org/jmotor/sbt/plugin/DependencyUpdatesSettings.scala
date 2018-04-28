@@ -46,8 +46,9 @@ object DependencyUpdatesSettings {
       })
     },
     dependencyUpgrade := {
+      val logger = sLog.value
       val reporter = Reporter(VersionService(
-        sLog.value, scalaVersion.value, scalaBinaryVersion.value, fullResolvers.value, credentials.value))
+        logger, scalaVersion.value, scalaBinaryVersion.value, fullResolvers.value, credentials.value))
       val bar = new ProgressBar("[info] Upgrading", "[info] Done upgrading.")
       bar.start()
       val futureDependencyUpdates = reporter.dependencyUpdates(libraryDependencies.value)
@@ -55,7 +56,6 @@ object DependencyUpdatesSettings {
       val pluginUpdates = Await.result(futurePluginUpdates, (thisProject.value.autoPlugins.size * 10).seconds)
       val dependencyUpdates = Await.result(futureDependencyUpdates, (libraryDependencies.value.size * 10).seconds)
       bar.stop()
-      val log = streams.value.log
       val projectId = thisProject.value.id
       val lock = appConfiguration.value.provider().scalaProvider().launcher().globalLock()
       val lockFile = new File("../.upgrades.lock")
@@ -65,23 +65,23 @@ object DependencyUpdatesSettings {
             Updates.applyDependencyUpdates(
               thisProject.value,
               scalaVersion.value, dependencyUpdates, dependencyUpgradeModuleNames.value) match {
-                case None       ⇒ log.error("can not found Dependencies.scala")
-                case Some(size) ⇒ log.success(s"$projectId: $size dependencies upgraded")
+                case None       ⇒ logger.error("can not found Dependencies.scala")
+                case Some(size) ⇒ logger.success(s"$projectId: $size dependencies upgraded")
               }
           }
         })
       } else {
-        log.info(s"$projectId: dependencies nothing to upgrade")
+        logger.info(s"$projectId: dependencies nothing to upgrade")
       }
       if (pluginUpdates.nonEmpty) {
         lock(lockFile, new Callable[Unit] {
           override def call(): Unit = {
             val size = Updates.applyPluginUpdates(thisProject.value, scalaVersion.value, pluginUpdates)
-            log.success(s"$projectId: $size plugins upgraded")
+            logger.success(s"$projectId: $size plugins upgraded")
           }
         })
       } else {
-        log.info(s"$projectId: plugins nothing to upgrade")
+        logger.info(s"$projectId: plugins nothing to upgrade")
       }
     })
 
