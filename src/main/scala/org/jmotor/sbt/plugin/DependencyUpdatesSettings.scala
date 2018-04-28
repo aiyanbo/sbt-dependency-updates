@@ -27,7 +27,7 @@ object DependencyUpdatesSettings {
     dependencyUpgradeModuleNames := Map.empty[String, String],
     dependencyUpdates := {
       val reporter = Reporter(VersionService(
-        scalaVersion.value, scalaBinaryVersion.value, fullResolvers.value, credentials.value))
+        sLog.value, scalaVersion.value, scalaBinaryVersion.value, fullResolvers.value, credentials.value))
       val bar = new ProgressBar("[info] Checking", "[info] Done checking.")
       bar.start()
       val futureDependencyUpdates = reporter.dependencyUpdates(libraryDependencies.value)
@@ -47,7 +47,7 @@ object DependencyUpdatesSettings {
     },
     dependencyUpgrade := {
       val reporter = Reporter(VersionService(
-        scalaVersion.value, scalaBinaryVersion.value, fullResolvers.value, credentials.value))
+        sLog.value, scalaVersion.value, scalaBinaryVersion.value, fullResolvers.value, credentials.value))
       val bar = new ProgressBar("[info] Upgrading", "[info] Done upgrading.")
       bar.start()
       val futureDependencyUpdates = reporter.dependencyUpdates(libraryDependencies.value)

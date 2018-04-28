@@ -14,9 +14,11 @@ import org.jmotor.sbt.exception.MultiException
 import org.jmotor.sbt.metadata.MetadataLoaderGroup
 import sbt.Credentials
 import sbt.librarymanagement.{ MavenRepository, ModuleID, Resolver, URLRepository }
+import sbt.util.Logger
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.{ Failure, Success, Try }
 import scala.util.control.NonFatal
 
 /**
@@ -27,6 +29,7 @@ import scala.util.control.NonFatal
  * @author AI
  */
 class VersionServiceImpl(
+    logger:             Logger,
     scalaVersion:       String,
     scalaBinaryVersion: String,
     resolvers:          Seq[Resolver],
@@ -125,8 +128,15 @@ class VersionServiceImpl(
 
   private[this] def getRealm(url: String): Option[Realm] = {
     val host = new URL(url).getHost
-    Credentials.forHost(credentials, host).map { c ⇒
-      new Realm.Builder(c.userName, c.passwd).setScheme(AuthScheme.BASIC).build()
+    Try {
+      Credentials.forHost(credentials, host).map { c ⇒
+        new Realm.Builder(c.userName, c.passwd).setScheme(AuthScheme.BASIC).build()
+      }
+    } match {
+      case Success(r) ⇒ r
+      case Failure(t) ⇒
+        logger.warn(t.getLocalizedMessage)
+        None
     }
   }
 

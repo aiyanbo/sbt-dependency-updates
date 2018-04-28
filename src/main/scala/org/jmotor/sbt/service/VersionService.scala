@@ -3,6 +3,7 @@ package org.jmotor.sbt.service
 import org.jmotor.sbt.dto.ModuleStatus
 import sbt.Credentials
 import sbt.librarymanagement.{ ModuleID, Resolver }
+import sbt.util.Logger
 
 import scala.concurrent.Future
 
@@ -23,9 +24,9 @@ trait VersionService {
 
 object VersionService {
 
-  def apply(scalaVersion: String, scalaBinaryVersion: String,
+  def apply(logger: Logger, scalaVersion: String, scalaBinaryVersion: String,
             resolvers: Seq[Resolver], credentials: Seq[Credentials]): VersionService = {
-    new VersionServiceImpl(scalaVersion, scalaBinaryVersion, resolvers, credentials)
+    new VersionServiceImpl(logger, scalaVersion, scalaBinaryVersion, resolvers, credentials)
   }
 
 }
