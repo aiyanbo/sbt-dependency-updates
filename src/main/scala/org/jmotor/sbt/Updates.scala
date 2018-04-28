@@ -98,12 +98,10 @@ object Updates {
   }
 
   private[sbt] def mappingModuleName(moduleName: String, nameMappings: Map[String, String]): String = {
-    val nameMapping = nameMappings.find {
-      case (k, _) ⇒
-        lazy val matched = moduleName.matches(k)
-        k == moduleName || matched
+    val nameMapping = nameMappings.get(moduleName) orElse nameMappings.collectFirst {
+      case (k, v) if moduleName.matches(k) ⇒ v
     }
-    nameMapping.map(_._2).getOrElse {
+    nameMapping.getOrElse {
       CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, moduleName)
     }
   }
