@@ -40,7 +40,7 @@ class MetadataLoaderGroup(scalaVersion: String, scalaBinaryVersion: String, load
     val multiFuture = new MultiFuture[Seq[ArtifactVersion]](p, futures.size, Seq.empty)
     futures foreach { future ⇒
       future.onComplete {
-        case Success(r) if r.nonEmpty              ⇒ p success r
+        case Success(r) if r.nonEmpty              ⇒ p trySuccess r
         case Success(_)                            ⇒ multiFuture.tryComplete()
         case Failure(_: ArtifactNotFoundException) ⇒ multiFuture.tryComplete()
         case Failure(t)                            ⇒ multiFuture.tryComplete(t)
