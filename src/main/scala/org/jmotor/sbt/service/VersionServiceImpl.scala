@@ -37,7 +37,7 @@ class VersionServiceImpl(
 
   private[this] implicit lazy val client: AsyncHttpClient = {
     import org.asynchttpclient.Dsl._
-    val maxConnections = 50
+    val maxConnections = 100
     asyncHttpClient(config().setMaxConnectionsPerHost(maxConnections))
   }
 
@@ -104,7 +104,7 @@ class VersionServiceImpl(
   }
 
   private[this] def getLoaderGroups(resolvers: Seq[Resolver], credentials: Seq[Credentials]): Seq[MetadataLoaderGroup] = {
-    val loaders: Seq[MetadataLoader] = new MavenSearchMetadataLoader() +: (resolvers.map {
+    val loaders: Seq[MetadataLoader] = resolvers.map {
       case repo: MavenRepository ⇒
         val url = repo.root
         if (isRemote(url)) {
@@ -120,10 +120,11 @@ class VersionServiceImpl(
           None
         }
       case _ ⇒ None
-    } collect { case Some(loader) ⇒ loader })
+    } collect { case Some(loader) ⇒ loader }
+    val mavenSearchMaxRows = 100
     Seq(
-      MetadataLoaderGroup(scalaVersion, scalaBinaryVersion, new MavenSearchMetadataLoader()),
-      MetadataLoaderGroup(scalaVersion, scalaBinaryVersion, loaders: _*))
+      MetadataLoaderGroup(scalaVersion, scalaBinaryVersion, loaders: _*),
+      MetadataLoaderGroup(scalaVersion, scalaBinaryVersion, new MavenSearchMetadataLoader(mavenSearchMaxRows)))
   }
 
   private[this] def getRealm(url: String): Option[Realm] = {

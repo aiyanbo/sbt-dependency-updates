@@ -4,11 +4,11 @@ object Dependencies {
 
   object Versions {
     val fansi = "0.2.5"
-    val guava = "24.1-jre"
+    val guava = "26.0-jre"
     val scalatest = "3.0.5"
     val scalariform = "0.2.6"
     val slf4jSimple = "1.7.25"
-    val artifactVersions = "1.0.2"
+    val artifactVersions = "1.0.3"
   }
 
   object Compile {
@@ -19,12 +19,12 @@ object Dependencies {
     val artifactVersions = "org.jmotor.artifact" %% "artifact-versions" % Versions.artifactVersions
   }
 
-  object Test {
-    val scalaTest: ModuleID = "org.scalatest" %% "scalatest" % Versions.scalatest % "test"
+  object Tests {
+    val scalaTest: ModuleID = "org.scalatest" %% "scalatest" % Versions.scalatest % Test
   }
 
   import Compile._
 
-  lazy val dependencies = Seq(fansi, guava, slf4jSimple, scalariform, artifactVersions, Test.scalaTest)
+  lazy val dependencies = Seq(fansi, guava, slf4jSimple, scalariform, artifactVersions, Tests.scalaTest)
 
 }
