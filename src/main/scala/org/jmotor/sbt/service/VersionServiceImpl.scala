@@ -52,7 +52,7 @@ class VersionServiceImpl(
   private[this] def check(module: ModuleID, sbtSettings: Option[(String, String)] = None): Future[ModuleStatus] = {
     val mv = new DefaultArtifactVersion(module.revision)
     val released = if (Option(mv.getQualifier).isDefined) {
-      !Versions.UNRELEASED.exists(q ⇒ mv.getQualifier.toLowerCase.contains(q))
+      !Versions.UNRELEASED.exists(q ⇒ mv.getQualifier.toLowerCase.equals(q))
     } else {
       true
     }
