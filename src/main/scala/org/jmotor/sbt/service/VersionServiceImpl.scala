@@ -82,7 +82,7 @@ class VersionServiceImpl(
   private def getModuleStatus(mv: DefaultArtifactVersion, released: Boolean, qualifierOpt: Option[String], versions: Seq[ArtifactVersion]) = {
     val releases = versions.filter {
       case av if Option(av.getQualifier).isDefined ⇒
-        !Versions.UNRELEASED.exists(q ⇒ av.getQualifier.toLowerCase.contains(q))
+        !Versions.UNRELEASED.exists(q ⇒ av.getQualifier.toLowerCase.equals(q))
       case _ ⇒ true
     }
     val matches = qualifierOpt match {
