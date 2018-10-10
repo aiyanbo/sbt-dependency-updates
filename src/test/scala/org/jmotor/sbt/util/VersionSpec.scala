@@ -23,6 +23,11 @@ class VersionSpec extends FunSuite {
     assert(!Version.isReleaseVersion(v4))
   }
 
+  test("scala m version") {
+    val v = new DefaultArtifactVersion("2.13.0-M4-pre-20d3c21")
+    assert(!Version.isReleaseVersion(v))
+  }
+
   test("is jre qualifier") {
     assert(Version.isJreQualifier("jre7"))
     assert(!Version.isJreQualifier("jrep"))

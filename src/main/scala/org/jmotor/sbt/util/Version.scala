@@ -14,7 +14,7 @@ object Version {
 
   private[this] lazy val jrePattern = s"jre\\d+".r.pattern
 
-  private[this] lazy val unreleasedPatterns = Versions.UNRELEASED.map(q ⇒ s"$q\\d+".r.pattern)
+  private[this] lazy val unreleasedPatterns = Versions.UNRELEASED.map(q ⇒ s"$q\\d+.*".r.pattern)
 
   def isReleaseVersion(version: ArtifactVersion): Boolean = {
     Option(version.getQualifier) match {
