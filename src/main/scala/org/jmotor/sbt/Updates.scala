@@ -69,7 +69,7 @@ object Updates {
               case _ ⇒ line
             }
           case line ⇒ line
-        }.mkString("\n")
+        }.mkString("\n") + "\n"
         Files.write(path, text.getBytes(Codec.UTF8.charSet), StandardOpenOption.WRITE)
     }
     expiredModules.size
