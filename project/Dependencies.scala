@@ -8,6 +8,7 @@ object Dependencies {
     val scalatest = "3.0.5"
     val scalariform = "0.2.6"
     val slf4jSimple = "1.7.25"
+    val scalaLibrary = "2.12.7"
     val artifactVersions = "1.0.3"
   }
 
