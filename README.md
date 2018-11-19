@@ -2,7 +2,6 @@
 
 [![Build Status](https://travis-ci.org/aiyanbo/sbt-dependency-updates.svg?branch=master)](https://travis-ci.org/aiyanbo/sbt-dependency-updates)
 [![Latest Version](https://img.shields.io/github/release/aiyanbo/sbt-dependency-updates.svg)](https://github.com/aiyanbo/sbt-dependency-updates/releases/latest)
-[![Join the chat at https://gitter.im/aiyanbo/sbt-dependency-updates](https://badges.gitter.im/aiyanbo/sbt-dependency-updates.svg)](https://gitter.im/aiyanbo/sbt-dependency-updates?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Display your SBT project's dependency updates.
 
