@@ -1,6 +1,6 @@
 import Settings.Formatting
 
-scalaVersion := "2.10.6"
+scalaVersion := "2.10.7"
 
 organization := "org.jmotor.sbt"
 
