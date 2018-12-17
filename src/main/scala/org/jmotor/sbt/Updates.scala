@@ -7,13 +7,12 @@ import org.jmotor.sbt.dto.{ ModuleStatus, Status }
 import org.jmotor.sbt.parser.PluginParser
 import org.jmotor.sbt.parser.VersionParser._
 import sbt.ResolvedProject
-import sbt.librarymanagement.ModuleID
+import scalariform.formatter.ScalaFormatter
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 import scala.io.Codec
 import scala.util.{ Failure, Success, Try }
-import scalariform.formatter.ScalaFormatter
-import scala.collection.JavaConverters._
 
 /**
  * Component:
@@ -51,7 +50,7 @@ object Updates {
       val newVersions = _versions.sortBy(_.length)
       val newText = text.replaceFirst(VersionsObjectRegex.regex, s"object Versions {\n${newVersions.mkString("\n")}\n}")
       val result = ScalaFormatter.format(newText, scalaVersion = scalaVersion)
-      Files.write(path, result.getBytes(Codec.UTF8.charSet), StandardOpenOption.WRITE)
+      Files.write(path, result.getBytes(Codec.UTF8.charSet), StandardOpenOption.TRUNCATE_EXISTING)
       expiredModules.size
     }
   }
@@ -70,7 +69,7 @@ object Updates {
             }
           case line ⇒ line
         }.mkString("\n") + "\n"
-        Files.write(path, text.getBytes(Codec.UTF8.charSet), StandardOpenOption.WRITE)
+        Files.write(path, text.getBytes(Codec.UTF8.charSet), StandardOpenOption.TRUNCATE_EXISTING)
     }
     expiredModules.size
   }
