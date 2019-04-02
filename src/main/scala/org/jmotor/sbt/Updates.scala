@@ -47,7 +47,7 @@ object Updates {
         s"""val ${v._1} = "${v._2}""""
       }
       val _versions = (versions ++ appends).toSet.toSeq
-      val newVersions = _versions.sortBy(_.length)
+      val newVersions = _versions.sorted
       val newText = text.replaceFirst(VersionsObjectRegex.regex, s"object Versions {\n${newVersions.mkString("\n")}\n}")
       val result = ScalaFormatter.format(newText, scalaVersion = scalaVersion)
       Files.write(path, result.getBytes(Codec.UTF8.charSet), StandardOpenOption.TRUNCATE_EXISTING)
