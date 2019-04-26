@@ -89,3 +89,16 @@ E.g. in `build.sbt` you can change configuration settings like this:
     "undertow.*" -> "undertow"
   )
 ```
+
+- `dependencyUpgradeComponentSorter`: a setting to sort component names, default: `org.jmotor.sbt.plugin.ComponentSorter.ByLength`
+
+> org.jmotor.sbt.plugin.ComponentSorter.ByLength: sort the names by length
+> org.jmotor.sbt.plugin.ComponentSorter.ByAlphabetically: sort the names by alphabetically
+
+E.g. in `build.sbt` you can change configuration settings like this:
+
+```scala
+  import org.jmotor.sbt.plugin.ComponentSorter
+  
+  dependencyUpgradeComponentSorter := ComponentSorter.ByAlphabetically
+```

@@ -26,6 +26,6 @@ object Dependencies {
 
   import Compile._
 
-  lazy val dependencies = Seq(fansi, guava, slf4jSimple, scalariform, artifactVersions, Tests.scalaTest)
+  lazy val dependencies: Seq[ModuleID] = Seq(fansi, guava, slf4jSimple, scalariform, artifactVersions, Tests.scalaTest)
 
 }

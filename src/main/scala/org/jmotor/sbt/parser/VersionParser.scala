@@ -11,7 +11,7 @@ import scala.util.matching.Regex
  */
 object VersionParser {
 
-  lazy val VersionRegex: Regex = """val ?(\w+) ?= ?".*"""".r
+  lazy val VersionRegex: Regex = """val ?(\w+) ?= ?"(.*)"""".r
   lazy val VersionsObjectRegex: Regex = """[\t ]*object ?Versions ?\{([^{]*)[\t ]*\}""".r
 
   def parseVersionLines(text: String): Array[String] = {

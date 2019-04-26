@@ -3,9 +3,11 @@ package org.jmotor.sbt
 import java.nio.file.{ Files, Path, Paths, StandardOpenOption }
 
 import com.google.common.base.CaseFormat
-import org.jmotor.sbt.dto.{ ModuleStatus, Status }
+import org.jmotor.sbt.dto.{ Component, ModuleStatus, Status }
 import org.jmotor.sbt.parser.PluginParser
 import org.jmotor.sbt.parser.VersionParser._
+import org.jmotor.sbt.plugin.ComponentSorter
+import org.jmotor.sbt.plugin.ComponentSorter.ComponentSorter
 import sbt.ResolvedProject
 import scalariform.formatter.ScalaFormatter
 
@@ -24,7 +26,7 @@ import scala.util.{ Failure, Success, Try }
 object Updates {
 
   def applyDependencyUpdates(project: ResolvedProject, scalaVersion: String,
-                             updates: Seq[ModuleStatus], nameMappings: Map[String, String]): Option[Int] = {
+                             updates: Seq[ModuleStatus], nameMappings: Map[String, String], sorter: ComponentSorter): Option[Int] = {
     getDependenciesPathOpt(project) map { path ⇒
       val text = new String(Files.readAllBytes(path), Codec.UTF8.charSet)
       val expiredModules = updates.collect {
@@ -33,22 +35,22 @@ object Updates {
           name -> m.lastVersion
       }.toMap
       lazy val matchedNames = ListBuffer[String]()
-      val versions = parseVersionLines(text).map {
-        case v @ VersionRegex(name) ⇒
+      val versions = parseVersionLines(text).collect {
+        case v @ VersionRegex(name, version) ⇒
           expiredModules.find(_._1.equalsIgnoreCase(name)) match {
-            case None ⇒ v
-            case Some(version) ⇒
-              matchedNames += version._1
-              s"""val ${version._1} = "${version._2}""""
+            case None ⇒ Component(name, version)
+            case Some(component) ⇒
+              matchedNames += component._1
+              Component(component._1, component._2)
           }
-        case v ⇒ v
       }
+
       val appends = expiredModules.filterNot(v ⇒ matchedNames.contains(v._1)).map { v ⇒
-        s"""val ${v._1} = "${v._2}""""
+        Component(v._1, v._2)
       }
-      val _versions = (versions ++ appends).toSet.toSeq
-      val newVersions = _versions.sorted
-      val newText = text.replaceFirst(VersionsObjectRegex.regex, s"object Versions {\n${newVersions.mkString("\n")}\n}")
+      val components = sortComponents((versions ++ appends).toSet.toSeq, sorter)
+      val componentLines = components.map(c ⇒ s"""val ${c.name} = "${c.version}"""")
+      val newText = text.replaceFirst(VersionsObjectRegex.regex, s"object Versions {\n${componentLines.mkString("\n")}\n}")
       val result = ScalaFormatter.format(newText, scalaVersion = scalaVersion)
       Files.write(path, result.getBytes(Codec.UTF8.charSet), StandardOpenOption.TRUNCATE_EXISTING)
       expiredModules.size
@@ -72,6 +74,13 @@ object Updates {
         Files.write(path, text.getBytes(Codec.UTF8.charSet), StandardOpenOption.TRUNCATE_EXISTING)
     }
     expiredModules.size
+  }
+
+  private[sbt] def sortComponents(components: Seq[Component], sorter: ComponentSorter): Seq[Component] = {
+    sorter match {
+      case ComponentSorter.ByAlphabetically ⇒ components.sortBy(_.name)
+      case _                                ⇒ components.sortBy(c ⇒ (c.name + c.version).length)
+    }
   }
 
   private[sbt] def getDependenciesPathOpt(project: ResolvedProject): Option[Path] = {
