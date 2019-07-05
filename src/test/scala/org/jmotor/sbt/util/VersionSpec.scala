@@ -1,6 +1,7 @@
 package org.jmotor.sbt.util
 
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
+import org.jmotor.artifact.Versions
 import org.scalatest.FunSuite
 
 /**
@@ -14,23 +15,23 @@ class VersionSpec extends FunSuite {
 
   test("is released version") {
     val v1 = new DefaultArtifactVersion("3.2.0-SNAP10")
-    assert(!Version.isReleaseVersion(v1))
+    assert(!Versions.isReleaseVersion(v1))
     val v2 = new DefaultArtifactVersion("3.2.0-PROD")
-    assert(Version.isReleaseVersion(v2))
+    assert(Versions.isReleaseVersion(v2))
     val v3 = new DefaultArtifactVersion("3.2.0-pr10")
-    assert(!Version.isReleaseVersion(v3))
+    assert(!Versions.isReleaseVersion(v3))
     val v4 = new DefaultArtifactVersion("3.2.0-M1")
-    assert(!Version.isReleaseVersion(v4))
+    assert(!Versions.isReleaseVersion(v4))
   }
 
   test("scala m version") {
     val v = new DefaultArtifactVersion("2.13.0-M4-pre-20d3c21")
-    assert(!Version.isReleaseVersion(v))
+    assert(!Versions.isReleaseVersion(v))
   }
 
   test("is jre qualifier") {
-    assert(Version.isJreQualifier("jre7"))
-    assert(!Version.isJreQualifier("jrep"))
+    assert(Versions.isJreQualifier("jre7"))
+    assert(!Versions.isJreQualifier("jrep"))
   }
 
 }
