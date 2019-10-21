@@ -5,7 +5,7 @@ import java.util.concurrent.Callable
 import org.jmotor.sbt.out.UpdatesPrinter
 import org.jmotor.sbt.service.VersionService
 import org.jmotor.sbt.util.ProgressBar
-import org.jmotor.sbt.{ Reporter, Updates }
+import org.jmotor.sbt.{Reporter, Updates}
 import sbt.Keys._
 import sbt._
 
@@ -26,11 +26,15 @@ object DependencyUpdatesSettings {
   def updatesSettings: Seq[Setting[_]] = Seq(
     dependencyUpgradeComponentSorter := ComponentSorter.ByLength,
     dependencyUpgradeModuleNames := Map.empty[String, String],
+    onlyIncludeOrganizations := Seq(),
     dependencyUpdates := {
       val reporter = Reporter(VersionService(
-        sLog.value, scalaVersion.value, scalaBinaryVersion.value, fullResolvers.value, credentials.value))
+        sLog.value, scalaVersion.value, scalaBinaryVersion.value, fullResolvers.value, credentials.value),
+        organizationsToInclude = onlyIncludeOrganizations.value
+      )
       val bar = new ProgressBar("[info] Checking", "[info] Done checking.")
       bar.start()
+
       val futureDependencyUpdates = reporter.dependencyUpdates(libraryDependencies.value)
       val futureGlobalPluginUpdates = reporter.globalPluginUpdates(sbtBinaryVersion.value)
       val futurePluginUpdates = reporter.pluginUpdates(sbtBinaryVersion.value, thisProject.value)
@@ -49,9 +53,12 @@ object DependencyUpdatesSettings {
     dependencyUpgrade := {
       val logger = sLog.value
       val reporter = Reporter(VersionService(
-        logger, scalaVersion.value, scalaBinaryVersion.value, fullResolvers.value, credentials.value))
+        logger, scalaVersion.value, scalaBinaryVersion.value, fullResolvers.value, credentials.value),
+        organizationsToInclude = onlyIncludeOrganizations.value
+      )
       val bar = new ProgressBar("[info] Upgrading", "[info] Done upgrading.")
       bar.start()
+
       val futureDependencyUpdates = reporter.dependencyUpdates(libraryDependencies.value)
       val futurePluginUpdates = reporter.pluginUpdates(sbtBinaryVersion.value, thisProject.value)
       val pluginUpdates = Await.result(futurePluginUpdates, (thisProject.value.autoPlugins.size * 10).seconds)
@@ -66,9 +73,9 @@ object DependencyUpdatesSettings {
             Updates.applyDependencyUpdates(
               thisProject.value,
               scalaVersion.value, dependencyUpdates, dependencyUpgradeModuleNames.value, dependencyUpgradeComponentSorter.value) match {
-                case None       ⇒ logger.error("can not found Dependencies.scala")
-                case Some(size) ⇒ logger.success(s"$projectId: $size dependencies upgraded")
-              }
+              case None ⇒ logger.error("can not found Dependencies.scala")
+              case Some(size) ⇒ logger.success(s"$projectId: $size dependencies upgraded")
+            }
           }
         })
       } else {
@@ -85,5 +92,6 @@ object DependencyUpdatesSettings {
         logger.info(s"$projectId: plugins nothing to upgrade")
       }
     })
+
 
 }

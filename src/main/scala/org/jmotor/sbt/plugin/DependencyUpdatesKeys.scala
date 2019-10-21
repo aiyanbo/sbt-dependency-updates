@@ -18,6 +18,8 @@ trait DependencyUpdatesKeys {
 
   lazy val dependencyUpgradeComponentSorter: SettingKey[ComponentSorter] = settingKey[ComponentSorter]("Component sorter")
 
+  lazy val onlyIncludeOrganizations: SettingKey[Seq[String]] = settingKey[Seq[String]]("Only include dependencies from this organizations")
+
   lazy val dependencyUpgradeModuleNames: SettingKey[Map[String, String]] = settingKey[Map[String, String]]("Module name mappings")
 
 }

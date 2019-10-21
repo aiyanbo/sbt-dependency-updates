@@ -1,16 +1,16 @@
 package org.jmotor.sbt
 
-import java.nio.file.{ Files, Path, Paths }
+import java.nio.file.{Files, Path, Paths}
 
 import org.jmotor.sbt.dto.ModuleStatus
 import org.jmotor.sbt.parser.PluginParser
 import org.jmotor.sbt.service.VersionService
-import sbt.{ ModuleID, ResolvedProject }
+import sbt.{ModuleID, ResolvedProject}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 /**
  * Component:
@@ -19,15 +19,15 @@ import scala.util.{ Failure, Success, Try }
  *
  * @author AI
  */
-class Reporter(versionService: VersionService) {
+class Reporter(versionService: VersionService, organizationsToInclude: Seq[String] = Seq()) {
 
   def dependencyUpdates(dependencies: Seq[ModuleID]): Future[Seq[ModuleStatus]] = {
-    Future.traverse(dependencies)(versionService.checkForUpdates).map(_.sortBy(_.status.id))
+
+    Future.traverse(dependencies.filter(filterByOrganization))(versionService.checkForUpdates).map(_.sortBy(_.status.id))
   }
 
-  def pluginUpdates(
-    sbtBinaryVersion: String,
-    project:          ResolvedProject): Future[Seq[ModuleStatus]] = {
+  def pluginUpdates(sbtBinaryVersion: String, project: ResolvedProject,
+                    ): Future[Seq[ModuleStatus]] = {
     val dir = Paths.get(project.base.getPath, "project")
     val sbtScalaBinaryVersion = getSbtScalaBinaryVersion(sbtBinaryVersion)
     Future.traverse(plugins(dir)) { module ⇒
@@ -52,7 +52,7 @@ class Reporter(versionService: VersionService) {
       case Success(lines) ⇒ PluginParser.parse(lines)
       case Failure(_)     ⇒ Seq.empty[ModuleID]
     }
-  }
+  }.filter(filterByOrganization)
 
   private[sbt] def getSbtScalaBinaryVersion(sbtBinaryVersion: String): String = {
     sbtBinaryVersion match {
@@ -61,10 +61,16 @@ class Reporter(versionService: VersionService) {
     }
   }
 
+  private def filterByOrganization(moduleId: ModuleID) = {
+    organizationsToInclude.isEmpty || organizationsToInclude.contains(moduleId.organization)
+  }
+  
 }
+
+
 
 object Reporter {
 
-  def apply(versionService: VersionService): Reporter = new Reporter(versionService)
+  def apply(versionService: VersionService, organizationsToInclude: Seq[String] = Seq()): Reporter = new Reporter(versionService, organizationsToInclude)
 
 }
