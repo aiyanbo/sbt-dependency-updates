@@ -33,7 +33,8 @@ class VersionServiceImpl(
     scalaVersion:       String,
     scalaBinaryVersion: String,
     resolvers:          Seq[Resolver],
-    credentials:        Seq[Credentials]) extends VersionService {
+    credentials:        Seq[Credentials],
+    allowSnapshots:     Boolean          = false) extends VersionService {
 
   private[this] implicit lazy val client: AsyncHttpClient = {
     import org.asynchttpclient.Dsl._
@@ -76,7 +77,7 @@ class VersionServiceImpl(
   }
 
   private def getModuleStatus(mv: DefaultArtifactVersion, released: Boolean, qualifierOpt: Option[String], versions: Seq[ArtifactVersion]) = {
-    val releases = versions.filter(Versions.isReleaseVersion)
+    val releases = if (allowSnapshots) versions else versions.filter(Versions.isReleaseVersion)
     val matches = qualifierOpt match {
       case None ⇒
         releases.filter { av ⇒

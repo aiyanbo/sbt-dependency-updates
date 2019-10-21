@@ -26,8 +26,7 @@ class Reporter(versionService: VersionService, organizationsToInclude: Seq[Strin
     Future.traverse(dependencies.filter(filterByOrganization))(versionService.checkForUpdates).map(_.sortBy(_.status.id))
   }
 
-  def pluginUpdates(sbtBinaryVersion: String, project: ResolvedProject,
-                    ): Future[Seq[ModuleStatus]] = {
+  def pluginUpdates(sbtBinaryVersion: String, project: ResolvedProject): Future[Seq[ModuleStatus]] = {
     val dir = Paths.get(project.base.getPath, "project")
     val sbtScalaBinaryVersion = getSbtScalaBinaryVersion(sbtBinaryVersion)
     Future.traverse(plugins(dir)) { module ⇒

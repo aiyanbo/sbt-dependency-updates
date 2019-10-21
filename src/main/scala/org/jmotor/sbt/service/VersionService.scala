@@ -25,8 +25,8 @@ trait VersionService {
 object VersionService {
 
   def apply(logger: Logger, scalaVersion: String, scalaBinaryVersion: String,
-            resolvers: Seq[Resolver], credentials: Seq[Credentials]): VersionService = {
-    new VersionServiceImpl(logger, scalaVersion, scalaBinaryVersion, resolvers, credentials)
+            resolvers: Seq[Resolver], credentials: Seq[Credentials], allowSnapshots: Boolean = false): VersionService = {
+    new VersionServiceImpl(logger, scalaVersion, scalaBinaryVersion, resolvers, credentials, allowSnapshots)
   }
 
 }

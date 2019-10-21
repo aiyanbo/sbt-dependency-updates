@@ -27,11 +27,12 @@ object DependencyUpdatesSettings {
     dependencyUpgradeComponentSorter := ComponentSorter.ByLength,
     dependencyUpgradeModuleNames := Map.empty[String, String],
     onlyIncludeOrganizations := Seq(),
+    allowSnapshotVersions := false,
     dependencyUpdates := {
-      val reporter = Reporter(VersionService(
-        sLog.value, scalaVersion.value, scalaBinaryVersion.value, fullResolvers.value, credentials.value),
-        organizationsToInclude = onlyIncludeOrganizations.value
-      )
+      val reporter = Reporter(
+        VersionService(
+          sLog.value, scalaVersion.value, scalaBinaryVersion.value, fullResolvers.value, credentials.value, allowSnapshots = allowSnapshotVersions.value),
+        organizationsToInclude = onlyIncludeOrganizations.value)
       val bar = new ProgressBar("[info] Checking", "[info] Done checking.")
       bar.start()
 
@@ -52,10 +53,10 @@ object DependencyUpdatesSettings {
     },
     dependencyUpgrade := {
       val logger = sLog.value
-      val reporter = Reporter(VersionService(
-        logger, scalaVersion.value, scalaBinaryVersion.value, fullResolvers.value, credentials.value),
-        organizationsToInclude = onlyIncludeOrganizations.value
-      )
+      val reporter = Reporter(
+        VersionService(
+          logger, scalaVersion.value, scalaBinaryVersion.value, fullResolvers.value, credentials.value, allowSnapshots = allowSnapshotVersions.value),
+        organizationsToInclude = onlyIncludeOrganizations.value)
       val bar = new ProgressBar("[info] Upgrading", "[info] Done upgrading.")
       bar.start()
 

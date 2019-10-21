@@ -20,6 +20,8 @@ trait DependencyUpdatesKeys {
 
   lazy val onlyIncludeOrganizations: SettingKey[Seq[String]] = settingKey[Seq[String]]("Only include dependencies from this organizations")
 
+  lazy val allowSnapshotVersions: SettingKey[Boolean] = settingKey[Boolean]("Accept SNAPSHOT versions as latest version")
+
   lazy val dependencyUpgradeModuleNames: SettingKey[Map[String, String]] = settingKey[Map[String, String]]("Module name mappings")
 
 }
