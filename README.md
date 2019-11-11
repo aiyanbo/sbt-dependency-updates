@@ -103,5 +103,5 @@ E.g. in `build.sbt` you can change configuration settings like this:
   dependencyUpgradeComponentSorter := ComponentSorter.ByAlphabetically
 ```
 
-## coming soon
+## Coming soon
 - CI Repoter: Design
