@@ -104,14 +104,14 @@ class VersionServiceImpl(
       case repo: MavenRepository ⇒
         val url = repo.root
         if (isRemote(url)) {
-          Option(new MavenRepoMetadataLoader(url, getRealm(url)))
+          Option(new MavenRepoMetadataLoader(url, getRealm(url, credentials)))
         } else {
           None
         }
       case repo: URLRepository ⇒
         val patterns = repo.patterns.ivyPatterns
         if (patterns.forall(isRemote)) {
-          Option(new IvyPatternsMetadataLoader(patterns, getRealm(patterns.head)))
+          Option(new IvyPatternsMetadataLoader(patterns, getRealm(patterns.head, credentials)))
         } else {
           None
         }
@@ -123,7 +123,7 @@ class VersionServiceImpl(
       MetadataLoaderGroup(scalaVersion, scalaBinaryVersion, MavenSearchMetadataLoader(mavenSearchMaxRows, client)))
   }
 
-  private[this] def getRealm(url: String): Option[Realm] = {
+  private[this] def getRealm(url: String, credentials: Seq[Credentials]): Option[Realm] = {
     val host = new URL(url).getHost
     Try {
       Credentials.forHost(credentials, host).map { c ⇒

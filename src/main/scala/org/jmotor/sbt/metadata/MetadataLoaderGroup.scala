@@ -5,6 +5,8 @@ import org.jmotor.artifact.exception.ArtifactNotFoundException
 import org.jmotor.artifact.metadata.MetadataLoader
 import org.jmotor.artifact.metadata.loader.IvyPatternsMetadataLoader
 import org.jmotor.sbt.concurrent.MultiFuture
+import sbt.librarymanagement.Constant
+import sbt.librarymanagement.Patch
 import sbt.librarymanagement.{ Binary, Disabled, Full, ModuleID }
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -52,9 +54,12 @@ class MetadataLoaderGroup(scalaVersion: String, scalaBinaryVersion: String, load
   private[metadata] def getArtifactIdAndAttrs(loader: MetadataLoader, module: ModuleID,
                                               sbtSettings: Option[(String, String)]): (String, Map[String, String]) = {
     val remapVersion = module.crossVersion match {
-      case _: Disabled ⇒ None
-      case _: Binary   ⇒ Option(scalaBinaryVersion)
-      case _: Full     ⇒ Option(scalaVersion)
+      case _: Disabled        ⇒ None
+      case _: Binary          ⇒ Option(scalaBinaryVersion)
+      case _: Full            ⇒ Option(scalaVersion)
+      case _: Patch           ⇒ Option(scalaVersion)
+      case constant: Constant ⇒ Option(constant.value)
+      case _                  ⇒ None
     }
     val name = remapVersion.map(v ⇒ s"${module.name}_$v").getOrElse(module.name)
     loader match {

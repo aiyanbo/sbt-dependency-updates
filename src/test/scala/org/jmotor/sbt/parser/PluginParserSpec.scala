@@ -1,9 +1,10 @@
 package org.jmotor.sbt.parser
 
-import org.scalatest.{ FunSpec, Matchers }
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import sbt.ModuleID
 
-class PluginParserSpec extends FunSpec with Matchers {
+class PluginParserSpec extends AnyFunSpec with Matchers {
 
   describe("PluginParser") {
     it("reads normal plugin") {
