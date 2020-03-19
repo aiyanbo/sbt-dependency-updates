@@ -1,8 +1,10 @@
 package org.jmotor.sbt.service
 
 import org.jmotor.sbt.dto.Status
-import org.scalatest.FunSuite
-import sbt.librarymanagement.{ MavenRepo, ModuleID, Resolver }
+import org.scalatest.funsuite.AnyFunSuite
+import sbt.librarymanagement.MavenRepo
+import sbt.librarymanagement.ModuleID
+import sbt.librarymanagement.Resolver
 import sbt.util.Logger
 
 import scala.concurrent.Await
@@ -15,7 +17,7 @@ import scala.concurrent.duration._
  *
  * @author AI
  */
-class VersionServiceSpec extends FunSuite {
+class VersionServiceSpec extends AnyFunSuite {
 
   private[this] val resolvers = Seq(
     MavenRepo("ali-maven", "http://maven.aliyun.com/nexus/content/groups/public/"),

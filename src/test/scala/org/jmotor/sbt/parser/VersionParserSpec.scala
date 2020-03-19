@@ -1,6 +1,6 @@
 package org.jmotor.sbt.parser
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * Component:
@@ -9,7 +9,7 @@ import org.scalatest.FunSuite
  *
  * @author AI
  */
-class VersionParserSpec extends FunSuite {
+class VersionParserSpec extends AnyFunSuite {
 
   test("read version lines") {
     val text =

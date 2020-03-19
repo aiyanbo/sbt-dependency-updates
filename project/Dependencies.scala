@@ -3,9 +3,9 @@ import sbt._
 object Dependencies {
 
   object Versions {
-    val fansi = "0.2.8"
+    val fansi = "0.2.9"
     val guava = "28.2-jre"
-    val scalatest = "3.1.0"
+    val scalatest = "3.1.1"
     val slf4jSimple = "1.7.30"
     val scalariform = "0.2.10"
     val scalaLibrary = "2.13.1"

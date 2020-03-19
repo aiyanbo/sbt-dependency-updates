@@ -2,7 +2,7 @@ package org.jmotor.sbt.util
 
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.jmotor.artifact.Versions
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * Component:
@@ -11,7 +11,7 @@ import org.scalatest.FunSuite
  *
  * @author AI
  */
-class VersionSpec extends FunSuite {
+class VersionSpec extends AnyFunSuite {
 
   test("is released version") {
     val v1 = new DefaultArtifactVersion("3.2.0-SNAP10")

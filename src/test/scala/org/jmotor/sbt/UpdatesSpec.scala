@@ -1,6 +1,6 @@
 package org.jmotor.sbt
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * Component:
@@ -9,7 +9,7 @@ import org.scalatest.FunSuite
  *
  * @author AI
  */
-class UpdatesSpec extends FunSuite {
+class UpdatesSpec extends AnyFunSuite {
 
   test("mapping names") {
     val mappings = Map(
