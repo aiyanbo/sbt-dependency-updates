@@ -1,8 +1,8 @@
 name: Release
 on:
   push:
-    branches: [master, main]
-    tags: ["*"]
+    branches: [ master, main ]
+    tags: [ "*" ]
 jobs:
   publish:
     runs-on: ubuntu-20.04
@@ -10,8 +10,13 @@ jobs:
       - uses: actions/checkout@v2.3.4
         with:
           fetch-depth: 0
-      - uses: olafurpg/setup-scala@v13
-      - run: sbt ci-release
+      - name: Setup JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 11
+      - name: Publish ${{ github.ref }}
+        run: sbt ci-release
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
