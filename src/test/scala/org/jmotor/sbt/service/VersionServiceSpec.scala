@@ -34,7 +34,7 @@ class VersionServiceSpec extends AnyFunSuite {
     val versionService = VersionService(Logger.Null, "2.12.4", "2.12", resolvers, Seq.empty)
     val future = versionService.checkPluginForUpdates(ModuleID("org.jetbrains", "sbt-idea-shell", "2017.2"), "1.0", "2.12")
     val status = Await.result(future, 30.seconds)
-    assert(status.status == Status.Expired)
+    assert(status.status == Status.Error)
   }
 
 }

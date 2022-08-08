@@ -1,5 +1,3 @@
-import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
-
 sbtPlugin := true
 
 organization := "org.jmotor.sbt"
@@ -8,18 +6,18 @@ name := "sbt-dependency-updates"
 
 libraryDependencies ++= Dependencies.dependencies
 
-releasePublishArtifactsAction := PgpKeys.publishSigned.value
+inThisBuild(List(
+  organization := "org.jmotor",
+  homepage := Some(url("https://github.com/aiyanbo/sbt-dependency-updates")),
+  licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+  developers := List(
+    Developer(
+      "aiyanbo",
+      "Andy Ai",
+      "yanbo.ai@gmail.com",
+      url("https://aiyanbo.github.io/")
+    )
+  )
+))
 
-releaseProcess := Seq[ReleaseStep](
-  checkSnapshotDependencies,
-  inquireVersions,
-  runClean,                               
-  runTest,                                
-  setReleaseVersion,                      
-  commitReleaseVersion,
-  tagRelease,                             
-  publishArtifacts,
-  setNextVersion,                         
-  commitNextVersion,                      
-  pushChanges
-)
+sonatypeProfileName := "org.jmotor"

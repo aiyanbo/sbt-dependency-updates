@@ -9,12 +9,13 @@ import org.jmotor.sbt.parser.VersionParser._
 import org.jmotor.sbt.plugin.ComponentSorter
 import org.jmotor.sbt.plugin.ComponentSorter.ComponentSorter
 import sbt.ResolvedProject
-import scalariform.formatter.ScalaFormatter
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 import scala.io.Codec
 import scala.util.{ Failure, Success, Try }
+import java.nio.file._
+import org.scalafmt.interfaces.Scalafmt
 
 /**
  * Component:
@@ -51,8 +52,10 @@ object Updates {
       val components = sortComponents((versions ++ appends).toSet.toSeq, sorter)
       val componentLines = components.map(c ⇒ s"""val ${c.name} = "${c.version}"""")
       val newText = text.replaceFirst(VersionsObjectRegex.regex, s"object Versions {\n${componentLines.mkString("\n")}\n}")
-      val result = ScalaFormatter.format(newText, scalaVersion = scalaVersion)
-      Files.write(path, result.getBytes(Codec.UTF8.charSet), StandardOpenOption.TRUNCATE_EXISTING)
+      val scalafmt = Scalafmt.create(this.getClass.getClassLoader)
+
+      //       val result = ScalaFormatter.format(newText, scalaVersion = scalaVersion)
+      Files.write(path, newText.getBytes(Codec.UTF8.charSet), StandardOpenOption.TRUNCATE_EXISTING)
       expiredModules.size
     }
   }
