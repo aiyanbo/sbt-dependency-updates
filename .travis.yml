@@ -3,5 +3,19 @@ scala:
   - 2.12.4
 jdk:
   - openjdk8
-script:
-  - sbt ++$TRAVIS_SCALA_VERSION test
+
+before_install:
+  - git fetch --tags
+
+stages:
+  - name: test
+  - name: release
+    if: ((branch = master AND type = push) OR (tag IS present)) AND NOT fork
+
+jobs:
+  include:
+    - name: test
+      script: sbt ++test
+
+    - stage: release
+      script: sbt ci-release
