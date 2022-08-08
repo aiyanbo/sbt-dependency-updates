@@ -3,13 +3,11 @@ package org.jmotor.sbt.dto
 import org.jmotor.sbt.dto.Status.Status
 import sbt.librarymanagement.ModuleID
 
-/**
- * Component:
- * Description:
- * Date: 2016/12/22
- *
- * @author AI
- */
+/** Component: Description: Date: 2016/12/22
+  *
+  * @author
+  *   AI
+  */
 final case class ModuleStatus(module: ModuleID, status: Status, lastVersion: String, errors: Seq[String]) {
 
   lazy val raw: String = s"${module.organization}:${module.name}:${module.revision}"

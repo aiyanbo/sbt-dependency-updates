@@ -1,10 +1,8 @@
 package org.jmotor.sbt.plugin
 
-/**
- *
- * @author AI
- *         2019-04-26
- */
+/** @author
+  *   AI 2019-04-26
+  */
 object ComponentSorter extends Enumeration {
 
   type ComponentSorter = Value

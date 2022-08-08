@@ -2,13 +2,11 @@ package org.jmotor.sbt.util
 
 import java.util.concurrent.atomic.AtomicInteger
 
-/**
- * Component:
- * Description:
- * Date: 2016/12/24
- *
- * @author AI
- */
+/** Component: Description: Date: 2016/12/24
+  *
+  * @author
+  *   AI
+  */
 class ProgressBar(message: String, done: String) {
   private[this] var running: Boolean = true
   private[this] val chars = Seq("/", "-", "\\", "|")

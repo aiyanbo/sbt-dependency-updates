@@ -16,18 +16,20 @@ import scala.util.{Failure, Success, Try}
 import org.scalafmt.interfaces.Scalafmt
 import scala.util.Using
 
-
-/**
- * Component:
- * Description:
- * Date: 2018/2/28
- *
- * @author AI
- */
+/** Component: Description: Date: 2018/2/28
+  *
+  * @author
+  *   AI
+  */
 object Updates {
 
-  def applyDependencyUpdates(project: ResolvedProject, scalaVersion: String,
-                             updates: Seq[ModuleStatus], nameMappings: Map[String, String], sorter: ComponentSorter): Option[Int] = {
+  def applyDependencyUpdates(
+      project: ResolvedProject,
+      scalaVersion: String,
+      updates: Seq[ModuleStatus],
+      nameMappings: Map[String, String],
+      sorter: ComponentSorter
+  ): Option[Int] = {
     getDependenciesPathOpt(project) map { path ⇒
       val text = new String(Files.readAllBytes(path), Codec.UTF8.charSet)
       val expiredModules = updates.collect {
@@ -36,14 +38,13 @@ object Updates {
           name -> m.lastVersion
       }.toMap
       lazy val matchedNames = ListBuffer[String]()
-      val versions = parseVersionLines(text).collect {
-        case v@VersionRegex(name, version) ⇒
-          expiredModules.find(_._1.equalsIgnoreCase(name)) match {
-            case None ⇒ Component(name, version)
-            case Some(component) ⇒
-              matchedNames += component._1
-              Component(component._1, component._2)
-          }
+      val versions = parseVersionLines(text).collect { case v @ VersionRegex(name, version) ⇒
+        expiredModules.find(_._1.equalsIgnoreCase(name)) match {
+          case None ⇒ Component(name, version)
+          case Some(component) ⇒
+            matchedNames += component._1
+            Component(component._1, component._2)
+        }
       }
 
       val appends = expiredModules.filterNot(v ⇒ matchedNames.contains(v._1)).map { v ⇒
@@ -51,7 +52,8 @@ object Updates {
       }
       val components = sortComponents((versions ++ appends).toSet.toSeq, sorter)
       val componentLines = components.map(c ⇒ s"""val ${c.name} = "${c.version}"""")
-      val newText = text.replaceFirst(VersionsObjectRegex.regex, s"object Versions {\n${componentLines.mkString("\n")}\n}")
+      val newText =
+        text.replaceFirst(VersionsObjectRegex.regex, s"object Versions {\n${componentLines.mkString("\n")}\n}")
       val scalafmt = Scalafmt.create(this.getClass.getClassLoader)
       val result = scalafmt.format(getScalafmtConfigPath(project), Paths.get("project", "Dependencies.scala"), newText)
       Files.write(path, result.getBytes(Codec.UTF8.charSet), StandardOpenOption.TRUNCATE_EXISTING)
@@ -61,9 +63,9 @@ object Updates {
 
   def applyPluginUpdates(project: ResolvedProject, scalaVersion: String, updates: Seq[ModuleStatus]): Int = {
     val expiredModules = updates.filter(_.status == Status.Expired)
-    getPluginSources(project).foreach {
-      case (path, lines) ⇒
-        val text = lines.map {
+    getPluginSources(project).foreach { case (path, lines) ⇒
+      val text = lines
+        .map {
           case line if line.startsWith("addSbtPlugin") ⇒
             line match {
               case PluginParser.AddSbtPluginRegex(org, n, v) ⇒
@@ -72,8 +74,9 @@ object Updates {
               case _ ⇒ line
             }
           case line ⇒ line
-        }.mkString("\n") + "\n"
-        Files.write(path, text.getBytes(Codec.UTF8.charSet), StandardOpenOption.TRUNCATE_EXISTING)
+        }
+        .mkString("\n") + "\n"
+      Files.write(path, text.getBytes(Codec.UTF8.charSet), StandardOpenOption.TRUNCATE_EXISTING)
     }
     expiredModules.size
   }

@@ -1,12 +1,10 @@
 package org.jmotor.sbt.dto
 
-/**
- * Component:
- * Description:
- * Date: 2016/12/24
- *
- * @author AI
- */
+/** Component: Description: Date: 2016/12/24
+  *
+  * @author
+  *   AI
+  */
 object Status extends Enumeration {
 
   type Status = Value
