@@ -14,4 +14,4 @@ jobs:
           distribution: temurin
           java-version: 11
       - name: Build and Test
-        run: sbt -v +test
+        run: sbt clean coverage ++test
