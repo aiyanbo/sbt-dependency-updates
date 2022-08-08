@@ -1,11 +1,10 @@
 # sbt-dependency-updates
 
-[![Build Status](https://travis-ci.org/aiyanbo/sbt-dependency-updates.svg?branch=master)](https://travis-ci.org/aiyanbo/sbt-dependency-updates)
 [![Latest Version](https://img.shields.io/github/release/aiyanbo/sbt-dependency-updates.svg)](https://github.com/aiyanbo/sbt-dependency-updates/releases/latest)
 
 Display your SBT project's dependency updates.
 
-![Dome](https://raw.githubusercontent.com/aiyanbo/paper-images/master/sbt-dependency-updates.gif)
+![Demo](https://raw.githubusercontent.com/aiyanbo/paper-images/master/sbt-dependency-updates.gif)
 
 ## Installation
 
