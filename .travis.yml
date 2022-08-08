@@ -15,7 +15,7 @@ stages:
 jobs:
   include:
     - name: test
-      script: sbt ++test
+      script: sbt clean coverage ++test
 
     - stage: release
       script: sbt ci-release
