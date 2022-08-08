@@ -4,13 +4,11 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.jmotor.artifact.Versions
 import org.scalatest.funsuite.AnyFunSuite
 
-/**
- * Component:
- * Description:
- * Date: 2018/10/10
- *
- * @author AI
- */
+/** Component: Description: Date: 2018/10/10
+  *
+  * @author
+  *   AI
+  */
 class VersionSpec extends AnyFunSuite {
 
   test("is released version") {

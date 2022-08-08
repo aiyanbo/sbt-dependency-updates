@@ -3,13 +3,11 @@ package org.jmotor.sbt.out
 import org.jmotor.sbt.out.UpdatesPrinter.wrap
 import org.scalatest.funsuite.AnyFunSuite
 
-/**
- * Component:
- * Description:
- * Date: 2018/2/26
- *
- * @author AI
- */
+/** Component: Description: Date: 2018/2/26
+  *
+  * @author
+  *   AI
+  */
 class UpdatesPrinterSpec extends AnyFunSuite {
 
   test("print layout") {

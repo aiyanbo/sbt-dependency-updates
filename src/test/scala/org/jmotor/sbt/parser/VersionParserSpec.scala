@@ -2,13 +2,11 @@ package org.jmotor.sbt.parser
 
 import org.scalatest.funsuite.AnyFunSuite
 
-/**
- * Component:
- * Description:
- * Date: 2018/3/1
- *
- * @author AI
- */
+/** Component: Description: Date: 2018/3/1
+  *
+  * @author
+  *   AI
+  */
 class VersionParserSpec extends AnyFunSuite {
 
   test("read version lines") {

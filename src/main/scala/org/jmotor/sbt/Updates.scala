@@ -1,21 +1,21 @@
 package org.jmotor.sbt
 
-import java.nio.file.{ Files, Path, Paths, StandardOpenOption }
-
+import java.nio.file.{Files, Path, Paths, StandardOpenOption}
 import com.google.common.base.CaseFormat
-import org.jmotor.sbt.dto.{ Component, ModuleStatus, Status }
+import org.jmotor.sbt.dto.{Component, ModuleStatus, Status}
 import org.jmotor.sbt.parser.PluginParser
-import org.jmotor.sbt.parser.VersionParser._
+import org.jmotor.sbt.parser.VersionParser.*
 import org.jmotor.sbt.plugin.ComponentSorter
 import org.jmotor.sbt.plugin.ComponentSorter.ComponentSorter
 import sbt.ResolvedProject
 
-import scala.collection.JavaConverters._
+import scala.collection.JavaConverters.*
 import scala.collection.mutable.ListBuffer
 import scala.io.Codec
-import scala.util.{ Failure, Success, Try }
-import java.nio.file._
+import scala.util.{Failure, Success, Try}
 import org.scalafmt.interfaces.Scalafmt
+import scala.util.Using
+
 
 /**
  * Component:
@@ -37,7 +37,7 @@ object Updates {
       }.toMap
       lazy val matchedNames = ListBuffer[String]()
       val versions = parseVersionLines(text).collect {
-        case v @ VersionRegex(name, version) ⇒
+        case v@VersionRegex(name, version) ⇒
           expiredModules.find(_._1.equalsIgnoreCase(name)) match {
             case None ⇒ Component(name, version)
             case Some(component) ⇒
@@ -53,9 +53,8 @@ object Updates {
       val componentLines = components.map(c ⇒ s"""val ${c.name} = "${c.version}"""")
       val newText = text.replaceFirst(VersionsObjectRegex.regex, s"object Versions {\n${componentLines.mkString("\n")}\n}")
       val scalafmt = Scalafmt.create(this.getClass.getClassLoader)
-
-      //       val result = ScalaFormatter.format(newText, scalaVersion = scalaVersion)
-      Files.write(path, newText.getBytes(Codec.UTF8.charSet), StandardOpenOption.TRUNCATE_EXISTING)
+      val result = scalafmt.format(getScalafmtConfigPath(project), Paths.get("project", "Dependencies.scala"), newText)
+      Files.write(path, result.getBytes(Codec.UTF8.charSet), StandardOpenOption.TRUNCATE_EXISTING)
       expiredModules.size
     }
   }
@@ -82,7 +81,7 @@ object Updates {
   private[sbt] def sortComponents(components: Seq[Component], sorter: ComponentSorter): Seq[Component] = {
     sorter match {
       case ComponentSorter.ByAlphabetically ⇒ components.sortBy(_.name)
-      case _                                ⇒ components.sortBy(c ⇒ (c.name + c.version).length)
+      case _ ⇒ components.sortBy(c ⇒ (c.name + c.version).length)
     }
   }
 
@@ -104,7 +103,7 @@ object Updates {
       }
     } match {
       case Success(sources) ⇒ sources
-      case Failure(_)       ⇒ Seq.empty
+      case Failure(_) ⇒ Seq.empty
     }
   }
 
@@ -115,6 +114,19 @@ object Updates {
     nameMapping.getOrElse {
       CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, moduleName)
     }
+  }
+
+  private[sbt] def getScalafmtConfigPath(project: ResolvedProject): Path = {
+    val filename = ".scalafmt.conf"
+    val path = Paths.get(project.base.getPath, filename)
+    if (Files.exists(path)) {
+      return path
+    }
+    Using(scala.io.Source.fromInputStream(this.getClass.getClassLoader.getResourceAsStream(filename))) { source =>
+      val temp = Files.createTempFile("scalafmt", ".conf")
+      Files.writeString(temp, source.mkString)
+      temp
+    }.get
   }
 
 }

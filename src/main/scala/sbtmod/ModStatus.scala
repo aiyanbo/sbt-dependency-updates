@@ -3,12 +3,15 @@ package sbtmod
 import sbt.librarymanagement.ModuleID
 import sbtmod.VersionStatus.VersionStatus
 
-/**
- *
- * @author AI
- *         2020/3/17
- */
-final case class ModStatus(module: ModuleID, lastVersion: String, status: VersionStatus, errors: Seq[Throwable])
+/** @author
+  *   AI 2020/3/17
+  */
+final case class ModStatus(
+    module: ModuleID,
+    lastVersion: String,
+    status: VersionStatus,
+    errors: Seq[Throwable]
+)
 
 object VersionStatus extends Enumeration {
 

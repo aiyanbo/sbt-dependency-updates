@@ -13,7 +13,9 @@ class PluginParserSpec extends AnyFunSpec with Matchers {
           |addSbtPlugin("org.jmotor.sbt" % "sbt-dependency-updates" % "1.1.0")
         """.stripMargin.split("\n")
       val found = PluginParser.parse(lines).toList
-      found shouldBe Seq(ModuleID("org.jmotor.sbt", "sbt-dependency-updates", "1.1.0"))
+      found shouldBe Seq(
+        ModuleID("org.jmotor.sbt", "sbt-dependency-updates", "1.1.0")
+      )
     }
 
     it("reads a few plugins with mixed content") {
@@ -30,7 +32,8 @@ class PluginParserSpec extends AnyFunSpec with Matchers {
       val found = PluginParser.parse(lines).toList
       found shouldBe Seq(
         ModuleID("org.jmotor.sbt", "sbt-dependency-updates", "1.1.0"),
-        ModuleID("org.scalastyle", "scalastyle-sbt-plugin", "1.0.0"))
+        ModuleID("org.scalastyle", "scalastyle-sbt-plugin", "1.0.0")
+      )
     }
 
     it("doesnt crash on the intellij plugin") {
@@ -45,7 +48,9 @@ class PluginParserSpec extends AnyFunSpec with Matchers {
           |) else scala.collection.Seq.empty%
         """.stripMargin.split("\n")
 
-      PluginParser.parse(lines) shouldBe Seq(ModuleID("org.jetbrains", "sbt-idea-shell", "2017.2"))
+      PluginParser.parse(lines) shouldBe Seq(
+        ModuleID("org.jetbrains", "sbt-idea-shell", "2017.2")
+      )
     }
   }
 }
