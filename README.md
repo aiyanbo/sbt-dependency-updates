@@ -1,6 +1,8 @@
 # sbt-dependency-updates
 
 [![Latest Version](https://img.shields.io/github/release/aiyanbo/sbt-dependency-updates.svg)](https://github.com/aiyanbo/sbt-dependency-updates/releases/latest)
+[![Release Pipeline](https://github.com/aiyanbo/sbt-dependency-updates/actions/workflows/release.yml/badge.svg)](https://github.com/aiyanbo/sbt-dependency-updates/actions/workflows/release.yml)
+
 
 Display your SBT project's dependency updates.
 
