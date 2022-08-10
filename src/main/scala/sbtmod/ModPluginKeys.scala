@@ -6,9 +6,10 @@ import sbt.TaskKey
 import sbt.settingKey
 import sbt.taskKey
 
-/** @author
-  *   AI 2020/3/9
-  */
+/**
+ * @author
+ *   AI 2020/3/9
+ */
 trait ModPluginKeys {
 
   lazy val modUpdates: TaskKey[Unit] = taskKey[Unit]("Check for updates")
