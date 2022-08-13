@@ -14,7 +14,6 @@ import scala.collection.mutable.ListBuffer
 import scala.io.Codec
 import scala.util.{Failure, Success, Try}
 import org.scalafmt.interfaces.Scalafmt
-import scala.util.Using
 
 /**
  * Component: Description: Date: 2018/2/28
@@ -122,11 +121,8 @@ object Updates {
     if (Files.exists(path)) {
       return path
     }
-    Using(scala.io.Source.fromInputStream(this.getClass.getClassLoader.getResourceAsStream(filename))) { source =>
-      val temp = Files.createTempFile("scalafmt", ".conf")
-      Files.writeString(temp, source.mkString)
-      temp
-    }.get
+    val temp = Files.createTempFile("scalafmt", ".conf")
+    Files.writeString(temp, scalafmt.conf)
   }
 
 }

@@ -23,7 +23,7 @@ object DependencyUpdatesSettings {
   import DependencyUpdatesKeys._
 
   def updatesSettings: Seq[Setting[_]] = Seq(
-    dependencyUpgradeComponentSorter := ComponentSorter.ByLength,
+    dependencyUpgradeComponentSorter := ComponentSorter.ByAlphabetically,
     dependencyUpgradeModuleNames     := Map.empty[String, String],
     dependencyUpdates := {
       val reporter = Reporter(
