@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
 
   object Versions {
-    val artifactVersions = "1.0.9-SNAPSHOT"
+    val artifactVersions = "1.0.9"
     val fansi            = "0.4.0"
     val guava            = "31.1-jre"
     val scalaLibrary     = "2.13.9"
