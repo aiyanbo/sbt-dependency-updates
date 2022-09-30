@@ -6,4 +6,4 @@ addSbtPlugin("org.scoverage" % "sbt-scoverage" % "2.0.1")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.2")
 
-addSbtPlugin("org.jmotor.sbt" % "sbt-dependency-updates" % "1.2.8")
+addSbtPlugin("org.jmotor.sbt" % "sbt-dependency-updates" % "1.2.6")
