@@ -1,7 +1,7 @@
 package org.jmotor.sbt.util
 
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
-import org.jmotor.artifact.Versions
+import org.jmotor.sbt.artifact.Versions
 import org.scalatest.funsuite.AnyFunSuite
 
 /** Component: Description: Date: 2018/10/10

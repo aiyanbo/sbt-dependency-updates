@@ -16,7 +16,8 @@ inThisBuild(List(
       "yanbo.ai@gmail.com",
       url("https://aiyanbo.github.io/")
     )
-  )
+  ),
+  credentials += Credentials(Path.userHome / ".sbt" / ".credentials"),
 ))
 
 sonatypeProfileName := "org.jmotor"

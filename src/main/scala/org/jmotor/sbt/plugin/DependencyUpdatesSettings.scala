@@ -1,16 +1,14 @@
 package org.jmotor.sbt.plugin
 
-import java.util.concurrent.Callable
-
 import org.jmotor.sbt.out.UpdatesPrinter
 import org.jmotor.sbt.service.VersionService
-import org.jmotor.sbt.util.ProgressBar
 import org.jmotor.sbt.{Reporter, Updates}
-import sbt.Keys._
-import sbt._
+import sbt.*
+import sbt.Keys.*
 
+import java.util.concurrent.Callable
 import scala.concurrent.Await
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 /**
  * Component: Description: Date: 2018/2/27
@@ -20,7 +18,7 @@ import scala.concurrent.duration._
  */
 object DependencyUpdatesSettings {
 
-  import DependencyUpdatesKeys._
+  import DependencyUpdatesKeys.*
 
   def updatesSettings: Seq[Setting[_]] = Seq(
     dependencyUpgradeComponentSorter := ComponentSorter.ByAlphabetically,
@@ -29,8 +27,6 @@ object DependencyUpdatesSettings {
       val reporter = Reporter(
         VersionService(sLog.value, scalaVersion.value, scalaBinaryVersion.value, fullResolvers.value, credentials.value)
       )
-      val bar = new ProgressBar("[info] Checking", "[info] Done checking.")
-      bar.start()
       val futureDependencyUpdates   = reporter.dependencyUpdates(libraryDependencies.value)
       val futureGlobalPluginUpdates = reporter.globalPluginUpdates(sbtBinaryVersion.value)
       val futurePluginUpdates       = reporter.pluginUpdates(sbtBinaryVersion.value, thisProject.value)
@@ -38,7 +34,6 @@ object DependencyUpdatesSettings {
       val dependencyUpdates         = Await.result(futureDependencyUpdates, (libraryDependencies.value.size * 10).seconds)
       val globalPluginUpdates =
         Await.result(futureGlobalPluginUpdates, (thisProject.value.autoPlugins.size * 10).seconds)
-      bar.stop()
       val lock     = appConfiguration.value.provider().scalaProvider().launcher().globalLock()
       val lockFile = new File("../.updates.lock")
       lock(
@@ -54,16 +49,13 @@ object DependencyUpdatesSettings {
       val reporter = Reporter(
         VersionService(logger, scalaVersion.value, scalaBinaryVersion.value, fullResolvers.value, credentials.value)
       )
-      val bar = new ProgressBar("[info] Upgrading", "[info] Done upgrading.")
-      bar.start()
       val futureDependencyUpdates = reporter.dependencyUpdates(libraryDependencies.value)
       val futurePluginUpdates     = reporter.pluginUpdates(sbtBinaryVersion.value, thisProject.value)
       val pluginUpdates           = Await.result(futurePluginUpdates, (thisProject.value.autoPlugins.size * 10).seconds)
       val dependencyUpdates       = Await.result(futureDependencyUpdates, (libraryDependencies.value.size * 10).seconds)
-      bar.stop()
-      val projectId = thisProject.value.id
-      val lock      = appConfiguration.value.provider().scalaProvider().launcher().globalLock()
-      val lockFile  = new File("../.upgrades.lock")
+      val projectId               = thisProject.value.id
+      val lock                    = appConfiguration.value.provider().scalaProvider().launcher().globalLock()
+      val lockFile                = new File("../.upgrades.lock")
       if (dependencyUpdates.nonEmpty) {
         lock(
           lockFile,

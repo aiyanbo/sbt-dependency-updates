@@ -34,6 +34,6 @@ object VersionService {
     resolvers: Seq[Resolver],
     credentials: Seq[Credentials]
   ): VersionService =
-    new VersionServiceImpl(logger, scalaVersion, scalaBinaryVersion, resolvers, credentials)
+    new VersionServiceImpl(logger, scalaVersion, scalaBinaryVersion, resolvers)
 
 }

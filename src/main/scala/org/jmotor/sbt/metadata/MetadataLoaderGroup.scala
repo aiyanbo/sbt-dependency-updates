@@ -1,13 +1,11 @@
 package org.jmotor.sbt.metadata
 
 import org.apache.maven.artifact.versioning.ArtifactVersion
-import org.jmotor.artifact.exception.ArtifactNotFoundException
-import org.jmotor.artifact.metadata.MetadataLoader
-import org.jmotor.artifact.metadata.loader.IvyPatternsMetadataLoader
+import org.jmotor.sbt.artifact.exception.ArtifactNotFoundException
+import org.jmotor.sbt.artifact.metadata.MetadataLoader
+import org.jmotor.sbt.artifact.metadata.loader.IvyPatternsMetadataLoader
 import org.jmotor.sbt.concurrent.MultiFuture
-import sbt.librarymanagement.Constant
-import sbt.librarymanagement.Patch
-import sbt.librarymanagement.{Binary, Disabled, Full, ModuleID}
+import sbt.librarymanagement.{Binary, Constant, Disabled, Full, ModuleID, Patch}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future, Promise}
