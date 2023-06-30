@@ -27,7 +27,8 @@ object Versions {
         !(Versions.UNRELEASED.contains(q) || UnreleasedPatterns.exists(_.matcher(q).matches()))
     }
 
-  def isJreQualifier(qualifier: String): Boolean =
+  def isJreQualifier(qualifier: String): Boolean = {
     jrePattern.matcher(qualifier).matches()
+  }
 
 }

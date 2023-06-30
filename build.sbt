@@ -19,4 +19,6 @@ inThisBuild(List(
   )
 ))
 
+coverageScalacPluginVersion := "2.0.10"
+
 sonatypeProfileName := "org.jmotor"
