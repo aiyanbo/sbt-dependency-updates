@@ -12,6 +12,7 @@ object Dependencies {
     val okhttp = "4.11.0"
     val jacksonModuleScala = "2.15.2"
     val scalaXml = "2.1.0"
+    //    val scalaXml = "1.3.0"
     val mavenArtifact = "3.9.3"
   }
 
