@@ -84,7 +84,7 @@ class VersionServiceImpl(logger: Logger, scalaVersion: String, scalaBinaryVersio
     val loaders: Seq[MetadataLoader] = resolvers.map {
       case repo: MavenRepository =>
         val url = repo.root
-        if (isRemote(url)) {
+        if (isRemote(url) && scala.util.Try(new java.net.URL(url)).isSuccess) {
           Option(new MavenRepoMetadataLoader(url))
         } else {
           None
@@ -106,6 +106,6 @@ class VersionServiceImpl(logger: Logger, scalaVersion: String, scalaBinaryVersio
   }
 
   private[this] def isRemote(url: String): Boolean =
-    url.startsWith("http://") || url.startsWith("https://")
+    !url.startsWith("file://") && !url.startsWith("jar://")
 
 }

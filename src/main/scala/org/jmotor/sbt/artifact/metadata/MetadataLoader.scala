@@ -8,6 +8,9 @@ import org.jmotor.sbt.artifact.exception.ArtifactNotFoundException
 import java.net.URL
 import java.nio.file.{Files, Path, Paths}
 import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.io.Source
+import java.io.ByteArrayInputStream
+import java.net.HttpURLConnection
 
 /**
  * Component: Description: Date: 2018/2/8
@@ -23,33 +26,24 @@ trait MetadataLoader {
     attrs: Map[String, String] = Map.empty
   ): Future[Seq[ArtifactVersion]]
 
-  def download(organization: String, artifactId: String, url: String)(implicit ec: ExecutionContext): Future[Path] = {
-    val src        = new URL(url)
-    val dispatcher = URLHandlerRegistry.getDefault
+  def download(organization: String, artifactId: String, url: String)(implicit ec: ExecutionContext): Future[Path] =
     Future {
-      dispatcher.getURLInfo(src)
-    }.flatMap {
-      case info if info.isReachable =>
-        val promise = Promise[Path]
-        val path    = Files.createTempFile(s"maven-metadata-$organization-$artifactId", ".xml")
-        try {
-          dispatcher.download(
-            src,
-            path.toFile,
-            new CopyProgressListener {
-              override def start(evt: CopyProgressEvent): Unit = {}
+      try {
+        val src        = new URL(url)
+        val connection = src.openConnection()
 
-              override def progress(evt: CopyProgressEvent): Unit = {}
-
-              override def end(evt: CopyProgressEvent): Unit =
-                promise.success(path)
-            }
-          )
-        } catch {
-          case e: Throwable => promise.failure(e)
+        Option(connection.getInputStream()).map { is =>
+          val path = Files.createTempFile(s"maven-metadata-$organization-$artifactId", ".xml")
+          // might better write via file output stream
+          Files.write(path, is.readAllBytes())
+          path
         }
-        promise.future
-      case _ => throw ArtifactNotFoundException(organization, artifactId)
+      } catch {
+        case e: java.io.FileNotFoundException => None
+        case e: Throwable                     => throw e
+      }
+    }.flatMap {
+      case None       => Future.failed(ArtifactNotFoundException(organization, artifactId))
+      case Some(path) => Future.successful(path)
     }
-  }
 }

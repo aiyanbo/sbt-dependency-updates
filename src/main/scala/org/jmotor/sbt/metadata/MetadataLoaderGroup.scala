@@ -54,7 +54,7 @@ class MetadataLoaderGroup(scalaVersion: String, scalaBinaryVersion: String, load
     sbtSettings: Option[(String, String)]
   ): (String, Map[String, String]) = {
     val remapVersion = module.crossVersion match {
-      case _: Disabled        => None
+      case _: Disabled        => sbtSettings.map { case (sbt, scala) => s"${scala}_$sbt" }
       case binary: Binary     => Option(binary.prefix + scalaBinaryVersion)
       case _: Full            => Option(scalaVersion)
       case _: Patch           => Option(scalaVersion)
