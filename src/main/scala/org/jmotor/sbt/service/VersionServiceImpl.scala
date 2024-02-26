@@ -18,6 +18,7 @@ import sbt.util.Logger
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.control.NonFatal
+import scala.util.{Failure, Success}
 
 /**
  * Component: Description: Date: 2018/2/9
@@ -84,8 +85,11 @@ class VersionServiceImpl(logger: Logger, scalaVersion: String, scalaBinaryVersio
     val loaders: Seq[MetadataLoader] = resolvers.map {
       case repo: MavenRepository =>
         val url = repo.root
-        if (isRemote(url) && scala.util.Try(new java.net.URL(url)).isSuccess) {
-          Option(new MavenRepoMetadataLoader(url))
+        if (isRemote(url)) {
+          scala.util.Try(new java.net.URL(url)) match {
+            case Failure(e) => logger.err(s"""Invalid URL "$url" for Maven repository: ${e.getMessage}"""); None
+            case Success(_) => Option(new MavenRepoMetadataLoader(url))
+          }
         } else {
           None
         }
