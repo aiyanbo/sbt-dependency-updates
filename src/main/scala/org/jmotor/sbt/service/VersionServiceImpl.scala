@@ -27,17 +27,17 @@ import scala.util.{Failure, Success}
  * AI
  */
 class VersionServiceImpl(logger: Logger, scalaVersion: String, scalaBinaryVersion: String, resolvers: Seq[Resolver])
-  extends VersionService {
+    extends VersionService {
 
   private[this] lazy val groups = getLoaderGroups(resolvers)
 
   override def checkForUpdates(module: ModuleID): Future[ModuleStatus] = check(module)
 
   override def checkPluginForUpdates(
-                                      module: ModuleID,
-                                      sbtBinaryVersion: String,
-                                      sbtScalaBinaryVersion: String
-                                    ): Future[ModuleStatus] =
+    module: ModuleID,
+    sbtBinaryVersion: String,
+    sbtScalaBinaryVersion: String
+  ): Future[ModuleStatus] =
     check(module, Option(sbtBinaryVersion -> sbtScalaBinaryVersion))
 
   private[this] def check(module: ModuleID, sbtSettings: Option[(String, String)] = None): Future[ModuleStatus] = {
@@ -110,6 +110,6 @@ class VersionServiceImpl(logger: Logger, scalaVersion: String, scalaBinaryVersio
   }
 
   private[this] def isRemote(url: String): Boolean =
-    !url.startsWith("file://") && !url.startsWith("jar://")
+    !url.startsWith("file:") && !url.startsWith("jar:")
 
 }
