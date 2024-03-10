@@ -4,7 +4,7 @@ import org.apache.maven.artifact.versioning.{ArtifactVersion, DefaultArtifactVer
 import org.jmotor.sbt.artifact.exception.ArtifactNotFoundException
 import org.jmotor.sbt.artifact.metadata.MetadataLoader
 
-import java.net.URL
+import java.net.URI
 import java.nio.file.{Files, Paths}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.XML
@@ -18,8 +18,8 @@ import scala.xml.XML
 class MavenRepoMetadataLoader(url: String)(implicit ec: ExecutionContext) extends MetadataLoader {
 
   private[this] lazy val (protocol, base) = {
-    val u = new URL(url)
-    u.getProtocol + "://" -> url.replace(s"${u.getProtocol}://", "")
+    val u = new URI(url)
+    (u.getScheme -> u.getHost)
   }
 
   override def getVersions(
@@ -28,7 +28,7 @@ class MavenRepoMetadataLoader(url: String)(implicit ec: ExecutionContext) extend
     attrs: Map[String, String]
   ): Future[Seq[ArtifactVersion]] = {
     val location =
-      protocol + Paths.get(base, organization.split('.').mkString("/"), artifactId, "maven-metadata.xml").toString
+      protocol + s"$base/${organization.split('.').mkString("/")}/$artifactId/maven-metadata.xml"
     download(organization, artifactId, location).map { file =>
       val stream = Files.newInputStream(file)
       try {
