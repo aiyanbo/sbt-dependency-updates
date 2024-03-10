@@ -86,7 +86,7 @@ class VersionServiceImpl(logger: Logger, scalaVersion: String, scalaBinaryVersio
       case repo: MavenRepository =>
         val url = repo.root
         if (isRemote(url)) {
-          scala.util.Try(new java.net.URL(url)) match {
+          scala.util.Try(new java.net.URI(url).toURL()) match {
             case Failure(e) => logger.err(s"""Invalid URL "$url" for Maven repository: ${e.getMessage}"""); None
             case Success(_) => Option(new MavenRepoMetadataLoader(url))
           }

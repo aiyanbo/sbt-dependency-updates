@@ -19,7 +19,7 @@ class MavenRepoMetadataLoader(url: String)(implicit ec: ExecutionContext) extend
 
   private[this] lazy val (protocol, base) = {
     val u = new URI(url)
-    (u.getScheme -> u.getHost)
+    (u.getScheme + "://" -> u.getRawSchemeSpecificPart.stripPrefix("//"))
   }
 
   override def getVersions(
