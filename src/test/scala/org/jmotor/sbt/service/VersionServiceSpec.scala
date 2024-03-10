@@ -37,7 +37,7 @@ class VersionServiceSpec extends AnyFunSuite {
     val versionService =
       VersionService(Logger.Null, "2.12.4", "2.12", resolvers, Seq.empty)
     val future = versionService.checkPluginForUpdates(
-      ModuleID("ch.epfl.scala", "sbt-bloop", "1.5.13"),
+      ModuleID("org.jetbrains", "sbt-idea-shell", "2017.2"),
       "1.0",
       "2.12"
     )
