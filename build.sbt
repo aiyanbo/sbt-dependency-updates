@@ -16,7 +16,8 @@ inThisBuild(List(
       "yanbo.ai@gmail.com",
       url("https://aiyanbo.github.io/")
     )
-  )
+  ),
+  Test / fork := true
 ))
 
 coverageScalacPluginVersion := "2.0.10"

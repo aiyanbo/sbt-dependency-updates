@@ -7,6 +7,8 @@ import sbt.util.Logger
 
 import scala.concurrent.Await
 import scala.concurrent.duration.*
+import java.net.{URI, URL, URLConnection, URLStreamHandler, URLStreamHandlerFactory}
+import java.util.concurrent.atomic.AtomicReference
 
 /** Component: Description: Date: 2018/3/1
  *
@@ -55,6 +57,35 @@ class VersionServiceSpec extends AnyFunSuite {
     )
     val status = Await.result(future, 30.seconds)
     assert(status.status == Status.Expired)
+  }
+
+  test("uses custom protocol handlers") {
+    val downloadsCalled = new AtomicReference(Vector.empty[String])
+      
+    // setting stream handler can be executed only once on jvm
+    // to be able to execute it multiple times from sbt shell it requires forking enabled like "Test / fork := true"
+    URL.setURLStreamHandlerFactory(new URLStreamHandlerFactory {
+      def createURLStreamHandler(protocol: String): URLStreamHandler = protocol match {
+        case "artifactregistry" =>
+          new URLStreamHandler {
+            protected def openConnection(url: URL): URLConnection = {
+              downloadsCalled.getAndUpdate(_ :+ url.toString())
+              new URI(s"https://${url.getHost}${url.getPath()}").normalize.toURL.openConnection
+            }
+          }
+        case _ => null
+      }
+    })
+
+    val testResolver   = MavenRepo("m2", "artifactregistry://repo1.maven.org/maven2/")
+    val versionService = VersionService(Logger.Null, "2.12.4", "2.12", Seq(testResolver), Seq.empty)
+    Await.result(versionService.checkForUpdates(ModuleID("com.google.guava", "guava", "23.0-jre")), 30.seconds)
+
+    assert(
+      downloadsCalled
+        .get()
+        .contains("artifactregistry://repo1.maven.org/maven2/com/google/guava/guava/maven-metadata.xml")
+    )
   }
 
 }
