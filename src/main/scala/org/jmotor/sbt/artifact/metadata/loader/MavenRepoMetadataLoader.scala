@@ -27,8 +27,9 @@ class MavenRepoMetadataLoader(url: String)(implicit ec: ExecutionContext) extend
     artifactId: String,
     attrs: Map[String, String]
   ): Future[Seq[ArtifactVersion]] = {
-    val location =
-      protocol + s"$base/${organization.split('.').mkString("/")}/$artifactId/maven-metadata.xml"
+    val location = new URI(s"$protocol$base/${organization.split('.').mkString("/")}/$artifactId/maven-metadata.xml")
+      .normalize()
+      .toString()
     download(organization, artifactId, location).map { file =>
       val stream = Files.newInputStream(file)
       try {
