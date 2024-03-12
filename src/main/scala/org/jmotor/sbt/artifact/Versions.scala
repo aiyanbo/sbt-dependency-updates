@@ -6,11 +6,11 @@ import org.apache.maven.artifact.versioning.{ArtifactVersion, DefaultArtifactVer
  * Component: Description: Date: 2018/2/8
  *
  * @author
- * AI
+ *   AI
  */
 object Versions {
 
-  private final lazy val ReleaseFlags: Set[String] = Set("prod")
+  private final lazy val ReleaseFlags: Set[String]   = Set("prod")
   private final lazy val UnReleaseFlags: Set[String] = Set("pr", "m", "beta", "rc", "alpha", "snapshot", "snap")
 
   private[this] final lazy val jrePattern = s"jre\\d+".r.pattern
@@ -41,7 +41,7 @@ object Versions {
       case av if isReleaseVersion(av) =>
         Option(av.getQualifier).fold(av) {
           case q if isJreQualifier(q) => new DefaultArtifactVersion(av.toString.replace(q, ""))
-          case _ => av
+          case _                      => av
         }
     }
     if (releases.nonEmpty) {
@@ -51,8 +51,7 @@ object Versions {
     }
   }
 
-  def isJreQualifier(qualifier: String): Boolean = {
+  def isJreQualifier(qualifier: String): Boolean =
     jrePattern.matcher(qualifier).matches()
-  }
 
 }

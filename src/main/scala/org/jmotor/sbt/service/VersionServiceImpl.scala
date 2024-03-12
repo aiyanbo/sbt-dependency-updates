@@ -24,27 +24,27 @@ import scala.util.{Failure, Success}
  * Component: Description: Date: 2018/2/9
  *
  * @author
- * AI
+ *   AI
  */
 class VersionServiceImpl(logger: Logger, scalaVersion: String, scalaBinaryVersion: String, resolvers: Seq[Resolver])
-  extends VersionService {
+    extends VersionService {
 
   private[this] lazy val groups = getLoaderGroups(resolvers)
 
   override def checkForUpdates(module: ModuleID): Future[ModuleStatus] = check(module)
 
   override def checkPluginForUpdates(
-                                      module: ModuleID,
-                                      sbtBinaryVersion: String,
-                                      sbtScalaBinaryVersion: String
-                                    ): Future[ModuleStatus] =
+    module: ModuleID,
+    sbtBinaryVersion: String,
+    sbtScalaBinaryVersion: String
+  ): Future[ModuleStatus] =
     check(module, Option(sbtBinaryVersion -> sbtScalaBinaryVersion))
 
   private[this] def check(module: ModuleID, sbtSettings: Option[(String, String)] = None): Future[ModuleStatus] = {
     val mv = new DefaultArtifactVersion(module.revision)
     groups.foldLeft(Future.successful(Seq.empty[String] -> Option.empty[ModuleStatus])) { (future, group) =>
       future.flatMap {
-        case (_, opt@Some(_)) => Future.successful(Seq.empty[String] -> opt)
+        case (_, opt @ Some(_)) => Future.successful(Seq.empty[String] -> opt)
         case (errors, _) =>
           group.getVersions(module, sbtSettings).map {
             case Nil => errors -> None
@@ -52,15 +52,15 @@ class VersionServiceImpl(logger: Logger, scalaVersion: String, scalaBinaryVersio
               val (max: ArtifactVersion, status: Status.Value) = getModuleStatus(mv, versions)
               Seq.empty[String] -> Option(ModuleStatus(module, status, max.toString))
           } recover {
-            case NonFatal(_: ArtifactNotFoundException) => errors -> None
-            case NonFatal(t: MultiException) => (errors ++ t.getMessages) -> None
-            case NonFatal(t) => (errors :+ t.getLocalizedMessage) -> None
+            case NonFatal(_: ArtifactNotFoundException) => errors                            -> None
+            case NonFatal(t: MultiException)            => (errors ++ t.getMessages)         -> None
+            case NonFatal(t)                            => (errors :+ t.getLocalizedMessage) -> None
           }
       }
     } map {
-      case (_, Some(status)) => status
+      case (_, Some(status))              => status
       case (errors, _) if errors.nonEmpty => ModuleStatus(module, Status.Error, errors)
-      case _ => ModuleStatus(module, Status.NotFound)
+      case _                              => ModuleStatus(module, Status.NotFound)
     }
   }
 
@@ -74,7 +74,7 @@ class VersionServiceImpl(logger: Logger, scalaVersion: String, scalaBinaryVersio
         } else {
           mv.compareTo(latest) match {
             case 0 | 1 => Status.Success
-            case _ => Status.Expired
+            case _     => Status.Expired
           }
         }
         (latest, status)
@@ -86,7 +86,7 @@ class VersionServiceImpl(logger: Logger, scalaVersion: String, scalaBinaryVersio
       case repo: MavenRepository =>
         val url = repo.root
         if (isRemote(url)) {
-          scala.util.Try(new java.net.URI(url).toURL()) match {
+          scala.util.Try(new java.net.URI(url).toURL) match {
             case Failure(e) => logger.err(s"""Invalid URL "$url" for Maven repository: ${e.getMessage}"""); None
             case Success(_) => Option(new MavenRepoMetadataLoader(url))
           }
