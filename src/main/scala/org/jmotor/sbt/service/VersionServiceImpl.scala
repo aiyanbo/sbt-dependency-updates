@@ -12,6 +12,7 @@ import org.jmotor.sbt.artifact.metadata.loader.{
 import org.jmotor.sbt.dto.{ModuleStatus, Status}
 import org.jmotor.sbt.exception.MultiException
 import org.jmotor.sbt.metadata.MetadataLoaderGroup
+import sbt.Credentials
 import sbt.librarymanagement.{MavenRepository, ModuleID, Resolver, URLRepository}
 import sbt.util.Logger
 
@@ -19,6 +20,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
+import sbt.librarymanagement.ivy.DirectCredentials
+import org.jmotor.sbt.artifact.metadata.loader.LoaderCredentials
+import java.net.URI
 
 /**
  * Component: Description: Date: 2018/2/9
@@ -26,10 +30,15 @@ import scala.util.{Failure, Success}
  * @author
  *   AI
  */
-class VersionServiceImpl(logger: Logger, scalaVersion: String, scalaBinaryVersion: String, resolvers: Seq[Resolver])
-    extends VersionService {
+class VersionServiceImpl(
+  logger: Logger,
+  scalaVersion: String,
+  scalaBinaryVersion: String,
+  resolvers: Seq[Resolver],
+  credentials: Seq[Credentials]
+) extends VersionService {
 
-  private[this] lazy val groups = getLoaderGroups(resolvers)
+  private[this] lazy val groups = getLoaderGroups(resolvers, credentials)
 
   override def checkForUpdates(module: ModuleID): Future[ModuleStatus] = check(module)
 
@@ -81,14 +90,21 @@ class VersionServiceImpl(logger: Logger, scalaVersion: String, scalaBinaryVersio
     }
   }
 
-  private[this] def getLoaderGroups(resolvers: Seq[Resolver]): Seq[MetadataLoaderGroup] = {
+  private[this] def getLoaderGroups(
+    resolvers: Seq[Resolver],
+    credentials: Seq[Credentials]
+  ): Seq[MetadataLoaderGroup] = {
+    val credentialsMap = credentials.collect { case creds: DirectCredentials =>
+      creds.host.trim -> LoaderCredentials(realm = creds.realm, userName = creds.userName, password = creds.passwd)
+    }.toMap
     val loaders: Seq[MetadataLoader] = resolvers.map {
       case repo: MavenRepository =>
         val url = repo.root
         if (isRemote(url)) {
           scala.util.Try(new java.net.URI(url).toURL) match {
             case Failure(e) => logger.err(s"""Invalid URL "$url" for Maven repository: ${e.getMessage}"""); None
-            case Success(_) => Option(new MavenRepoMetadataLoader(url))
+            case Success(url) =>
+              Option(new MavenRepoMetadataLoader(url.toURI, credentialsMap.get(url.getHost.trim)))
           }
         } else {
           None

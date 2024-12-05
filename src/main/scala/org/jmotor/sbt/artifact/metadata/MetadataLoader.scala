@@ -12,6 +12,8 @@ import scala.io.Source
 import java.io.ByteArrayInputStream
 import java.net.HttpURLConnection
 import java.io.FileOutputStream
+import loader.LoaderCredentials
+import java.util.Base64
 
 /**
  * Component: Description: Date: 2018/2/8
@@ -27,11 +29,20 @@ trait MetadataLoader {
     attrs: Map[String, String] = Map.empty
   ): Future[Seq[ArtifactVersion]]
 
-  def download(organization: String, artifactId: String, url: String)(implicit ec: ExecutionContext): Future[Path] =
+  def download(organization: String, artifactId: String, url: String, credentials: Option[LoaderCredentials] = None)(
+    implicit ec: ExecutionContext
+  ): Future[Path] =
     Future {
       try {
         val src        = new URI(url).toURL()
         val connection = src.openConnection()
+
+        // Add basic authentication header if credentials are provided
+        credentials.foreach { creds =>
+          val auth        = creds.userName + ":" + creds.password
+          val encodedAuth = Base64.getEncoder.encodeToString(auth.getBytes("UTF-8"))
+          connection.setRequestProperty("Authorization", s"Basic $encodedAuth")
+        }
 
         Option(connection.getInputStream()).map { is =>
           val path = Files.createTempFile(s"maven-metadata-$organization-$artifactId", ".xml")

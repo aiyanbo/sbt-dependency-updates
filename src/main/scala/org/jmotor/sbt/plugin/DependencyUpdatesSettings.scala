@@ -25,7 +25,13 @@ object DependencyUpdatesSettings {
     dependencyUpgradeModuleNames     := Map.empty[String, String],
     dependencyUpdates := {
       val reporter = Reporter(
-        VersionService(sLog.value, scalaVersion.value, scalaBinaryVersion.value, fullResolvers.value, credentials.value)
+        VersionService(
+          sLog.value,
+          scalaVersion.value,
+          scalaBinaryVersion.value,
+          fullResolvers.value,
+          allCredentials.value ++ credentials.value
+        )
       )
       val futureDependencyUpdates   = reporter.dependencyUpdates(libraryDependencies.value)
       val futureGlobalPluginUpdates = reporter.globalPluginUpdates(sbtBinaryVersion.value)
@@ -47,7 +53,13 @@ object DependencyUpdatesSettings {
     dependencyUpgrade := {
       val logger = sLog.value
       val reporter = Reporter(
-        VersionService(logger, scalaVersion.value, scalaBinaryVersion.value, fullResolvers.value, credentials.value)
+        VersionService(
+          logger,
+          scalaVersion.value,
+          scalaBinaryVersion.value,
+          fullResolvers.value,
+          allCredentials.value ++ credentials.value
+        )
       )
       val futureDependencyUpdates = reporter.dependencyUpdates(libraryDependencies.value)
       val futurePluginUpdates     = reporter.pluginUpdates(sbtBinaryVersion.value, thisProject.value)

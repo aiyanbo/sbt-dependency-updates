@@ -80,14 +80,16 @@ You can download an example project with this layout here:
 
 ## Settings
 
-- `dependencyUpgradeModuleNames`: a setting to customize the mapping of module name
+- `dependencyUpgradeModuleNames`: a setting to customize the mapping of module name (or `"org-name:module-name"`)
 
 E.g. in `build.sbt` you can change configuration settings like this:
 
 ```scala
   dependencyUpgradeModuleNames := Map(
     "slf4j-simple" -> "slf4j",
-    "undertow.*" -> "undertow"
+    "undertow.*"   -> "undertow",
+    "org.some:some-module"  -> "someModule",      // "org.some"  % "some-module" uses "someModule" as version variable name
+    "org.other:some-module" -> "someOtherModule", // "org.other" % "some-module" uses "someOtherModule" as version variable name
   )
 ```
 

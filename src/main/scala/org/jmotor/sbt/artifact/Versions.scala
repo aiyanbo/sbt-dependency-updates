@@ -18,23 +18,22 @@ object Versions {
   //  private[this] final lazy val UnreleasedPatterns: Set[Pattern] =
   //    Versions.UnReleaseFlags.map(q => s".*$q[_-]?\\d+.*".r.pattern)
 
-  def isReleaseVersion(version: ArtifactVersion): Boolean = {
-    val fullVersion = version.toString.toLowerCase
-    if (UnReleaseFlags.exists(f => fullVersion.endsWith(f))) {
-      false
-    } else {
-      Option(version.getQualifier) match {
-        case None => true
-        case Some(qualifier) =>
-          val q = qualifier.toLowerCase
-          if (ReleaseFlags.contains(q)) {
-            true
-          } else {
-            !(Versions.UnReleaseFlags.contains(q) || UnReleaseFlags.exists(f => q.contains(f)))
-          }
+  // we consider this version final if:
+  // - there is no un-release flag suffixing the version, and
+  // - if the version has a qualifier, it is either a release flag or at least it's not an un-release flag
+  def isReleaseVersion(version: ArtifactVersion): Boolean =
+    !(UnReleaseFlags.exists(version.toString.toLowerCase.endsWith)) &&
+      Option(version.getQualifier).map(_.toLowerCase).forall { q =>
+        ReleaseFlags(q) || !isUnreleaseQualifier(q)
       }
-    }
-  }
+
+  // disqualify if `qualifier` (or a substring of it) occurs in UnReleaseFlags, or if it looks like a build number
+  private def isUnreleaseQualifier(qualifier: String): Boolean =
+    UnReleaseFlags(qualifier) || UnReleaseFlags.exists(qualifier.contains) || isBuildNumber(qualifier)
+
+  // consisting entirely of hex characters, possibly with one dash in between (e.g., 234-d1a2b53 or 1234abc)
+  private def isBuildNumber(qualifier: String): Boolean =
+    qualifier.matches("^[0-9a-f]+(-[0-9a-f]+)?$")
 
   def latestRelease(versions: Seq[ArtifactVersion]): Option[ArtifactVersion] = {
     val releases = versions.collect {

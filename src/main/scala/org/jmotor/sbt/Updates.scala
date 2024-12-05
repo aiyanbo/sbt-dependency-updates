@@ -14,6 +14,7 @@ import scala.collection.mutable.ListBuffer
 import scala.io.Codec
 import scala.util.{Failure, Success, Try}
 import org.scalafmt.interfaces.Scalafmt
+import sbt.librarymanagement.ModuleID
 
 /**
  * Component: Description: Date: 2018/2/28
@@ -34,7 +35,7 @@ object Updates {
       val text = new String(Files.readAllBytes(path), Codec.UTF8.charSet)
       val expiredModules = updates.collect {
         case m if m.status == Status.Expired =>
-          val name = mappingModuleName(m.module.name, nameMappings)
+          val name = mappingModuleName(m.module, nameMappings)
           name -> m.lastVersion
       }.toMap
       lazy val matchedNames = ListBuffer[String]()
@@ -106,12 +107,14 @@ object Updates {
       case Failure(_)       => Seq.empty
     }
 
-  private[sbt] def mappingModuleName(moduleName: String, nameMappings: Map[String, String]): String = {
-    val nameMapping = nameMappings.get(moduleName) orElse nameMappings.collectFirst {
-      case (k, v) if moduleName.matches(k) => v
+  private[sbt] def mappingModuleName(module: ModuleID, nameMappings: Map[String, String]): String = {
+    val name       = module.name
+    val orgAndName = s"${module.organization}:$name"
+    val nameMapping = nameMappings.get(orgAndName) orElse nameMappings.get(name) orElse nameMappings.collectFirst {
+      case (mappingRegex, mappedName) if orgAndName.matches(mappingRegex) || name.matches(mappingRegex) => mappedName
     }
     nameMapping.getOrElse {
-      CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, moduleName)
+      CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, name)
     }
   }
 

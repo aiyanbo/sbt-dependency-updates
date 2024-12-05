@@ -9,18 +9,19 @@ import java.nio.file.{Files, Paths}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.XML
 
+case class LoaderCredentials(realm: String, userName: String, password: String)
+
 /**
  * Component: Description: Date: 2018/2/8
  *
  * @author
  *   AI
  */
-class MavenRepoMetadataLoader(url: String)(implicit ec: ExecutionContext) extends MetadataLoader {
+class MavenRepoMetadataLoader(uri: URI, credentials: Option[LoaderCredentials])(implicit ec: ExecutionContext)
+    extends MetadataLoader {
 
-  private[this] lazy val (protocol, base) = {
-    val u = new URI(url)
-    (u.getScheme + "://" -> u.getRawSchemeSpecificPart.stripPrefix("//"))
-  }
+  private[this] lazy val (protocol, base) =
+    (uri.getScheme + "://" -> uri.getRawSchemeSpecificPart.stripPrefix("//"))
 
   override def getVersions(
     organization: String,
@@ -30,7 +31,7 @@ class MavenRepoMetadataLoader(url: String)(implicit ec: ExecutionContext) extend
     val location = new URI(s"$protocol$base/${organization.split('.').mkString("/")}/$artifactId/maven-metadata.xml")
       .normalize()
       .toString()
-    download(organization, artifactId, location).map { file =>
+    download(organization, artifactId, location, credentials).map { file =>
       val stream = Files.newInputStream(file)
       try {
         val xml = XML.load(stream)
