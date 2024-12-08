@@ -86,13 +86,21 @@ object Updates {
     }
 
   private[sbt] def getDependenciesPathOpt(project: ResolvedProject): Option[Path] = {
-    var path = Paths.get(project.base.getPath, "project", "Dependencies.scala")
-    if (Files.exists(path)) {
-      Option(path)
-    } else {
-      path = Paths.get(project.base.getParentFile.getPath, "project", "Dependencies.scala")
-      Option(path).filter(p => Files.exists(p))
-    }
+    @scala.annotation.tailrec
+    def go(projectBase: Option[sbt.File]): Option[Path] =
+      projectBase match {
+        case Some(path) =>
+          val projectDependenciesPath = Paths.get(path.getPath, "project", "Dependencies.scala")
+          if (Files.exists(projectDependenciesPath)) {
+            Option(projectDependenciesPath)
+          } else {
+            go(Option(path.getParentFile))
+          }
+        case None =>
+          None
+      }
+
+    go(Option(project.base))
   }
 
   private[sbt] def getPluginSources(project: ResolvedProject): Seq[(Path, Seq[String])] =
